@@ -6,9 +6,8 @@ from openpyxl import Workbook
 
 curdir = os.getcwd()
 # 画像を含むディレクトリのパス
-folder = f"""{curdir}/dataset"""
-# 保存するエクセルシートの名前
-excel_name = "excel_file_name.xlsx"
+folder = f"""{curdir}/dataset/uninspected"""
+
 # 画像の拡張子
 image_extension = ".png"
 
@@ -32,37 +31,48 @@ while True:
     if event == sg.WINDOW_CLOSED:
         break
     elif event == 'good!':
+        old_image = image
         image = next(images_cycle)
         if image == first_image:
             break
         window['-IMAGE-'].update(filename=os.path.join(folder, image))
 
-        if os.path.isfile(f"""{curdir}/dataset/labeling.xlsx"""):
-            df = pd.read_excel(f"""{curdir}/dataset/labeling.xlsx""", engine="openpyxl")
+        if os.path.isfile(f"""{curdir}/dataset/room_info.xlsx"""):
+            df = pd.read_excel(f"""{curdir}/dataset/room_info.xlsx""", engine="openpyxl")
         else:  # If file does not exist, create a new DataFrame
             df = pd.DataFrame()
-
-        data = {'Image Name': [image], 'Status': ['good']} 
-        data = pd.DataFrame(data=data, index=[0])
-        df = pd.concat([df ,data], ignore_index=True)
+        df.loc[df["room"]==old_image.split(".")[0], "target"] = "good"
         print(df)
-        df.to_excel(f"""{curdir}/dataset/labeling.xlsx""", index=False, engine="openpyxl")
-        count += 1
+        df.to_excel(f"""{curdir}/dataset/room_info.xlsx""", index=False, engine="openpyxl")
+        # 移動元のファイルパス
+        source_file = os.path.join(folder, old_image)
+        # 移動先のディレクトリパス
+        destination_dir = f"""{curdir}/dataset/inspected/"""
+        # 移動先のファイルパス
+        destination_file = os.path.join(destination_dir, os.path.basename(source_file))
+        # ファイルを移動する
+        os.rename(source_file, destination_file)
+
     elif event == "bad!":
+        old_image = image
         image = next(images_cycle)
         if image == first_image:
             break
         window['-IMAGE-'].update(filename=os.path.join(folder, image))
 
-        if os.path.isfile(f"""{curdir}/dataset/labeling.xlsx"""):
-            df = pd.read_excel(f"""{curdir}/dataset/labeling.xlsx""", engine="openpyxl")
+        if os.path.isfile(f"""{curdir}/dataset/room_info.xlsx"""):
+            df = pd.read_excel(f"""{curdir}/dataset/room_info.xlsx""", engine="openpyxl")
         else:  # If file does not exist, create a new DataFrame
             df = pd.DataFrame()
-
-        data = {'Image Name': [image], 'Status': ['bad']} 
-        data = pd.DataFrame(data=data, index=[0])
-        df = pd.concat([df ,data], ignore_index=True)
+        df.loc[df["room"]==old_image.split(".")[0], "target"] = "bad"
         print(df)
-        df.to_excel(f"""{curdir}/dataset/labeling.xlsx""", index=False, engine="openpyxl")
-        count += 1
+        df.to_excel(f"""{curdir}/dataset/room_info.xlsx""", index=False, engine="openpyxl")
+        # 移動元のファイルパス
+        source_file = os.path.join(folder, old_image)
+        # 移動先のディレクトリパス
+        destination_dir = f"""{curdir}/dataset/inspected/"""
+        # 移動先のファイルパス
+        destination_file = os.path.join(destination_dir, os.path.basename(source_file))
+        # ファイルを移動する
+        os.rename(source_file, destination_file)
 window.close()
