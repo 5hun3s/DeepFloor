@@ -230,14 +230,22 @@ class Room():
             fig.savefig(fsasa/save_path)
     """
 def main(room_edges:list, random_furniture:list, save_path:str, num:int, windows:list=None, doors:list=None):
-    room_info = list()
+    if os.path.isfile(f"""{os.getcwd()}/dataset/room_info.xlsx"""):
+        room_info = pd.read_excel(f"""{os.getcwd()}/dataset/room_info.xlsx""", engine="openpyxl")
+    else:  # If file does not exist, create a new DataFrame
+        room_info = pd.DataFrame()
+    image_num = len(os.listdir(f"""{os.getcwd()}/dataset/uninspected""")) + len(os.listdir(f"""{os.getcwd()}/dataset/inspected"""))
     for _ in range(num):
         fig, ax = plt.subplots()
         room = Room(room_edges, windows=windows, doors=doors)
         room.plot_room(ax)
-        furniture_info = room.random_plot_furniture(random_furniture=furniture_dic, ax=ax)
-        room_info.append(furniture_info)
-        fig.savefig(f"""{os.getcwd()}/dataset/room_{str(_)}.png""")
+        furniture_info_list = room.random_plot_furniture(random_furniture=furniture_dic, ax=ax)
+        for furniture_info in furniture_info_list:
+            df = pd.DataFrame(furniture_info)
+            df["room"] = f"""room_{str(_ + image_num)}"""
+            room_info = pd.concat([room_info, df])
+        fig.savefig(f"""{os.getcwd()}/dataset/uninspected/room_{str(_ + image_num)}.png""")
+    room_info["target"] = "uninspected"
     return room_info
         
         
@@ -273,15 +281,8 @@ if __name__ ==  "__main__":
         {"v_width_range":0.5, "h_width_range":1, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chest", "color":"purple"},
     ]
     room_info = main(room_edges=edges, random_furniture=furniture_dic, save_path=None, num=100, windows=None, doors=None)
-        
-    total = pd.DataFrame()
-    for i,room in enumerate(room_info):
-        print(i)
-        for r in room:
-            df = pd.DataFrame(r)
-            df["room_number"] = i
-            total = pd.concat([total, df])
-    total.to_excel(f"""{os.getcwd()}/dataset/room_info.xlsx""", index=False)
-    total.to_pickle(f"""{os.getcwd()}/dataset/room_info.pkl""", index=False)
+    print(room_info)
+    room_info.to_excel(f"""{os.getcwd()}/dataset/room_info.xlsx""", index=False)
+    #total.to_pickle(f"""{os.getcwd()}/dataset/room_info.pkl""", index=False)
 
         
