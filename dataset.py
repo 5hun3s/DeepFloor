@@ -222,6 +222,18 @@ class Room():
             self.furniture_text_objects = list()
         
     def random_plot_furniture(self, random_furniture:list, ax):
+        """家具を部屋、他の家具とかさならないように配置するメソッド
+
+        Parameters
+        ---------
+        random_furniture : list
+            ランダムに配置する家具の情報が辞書オブジェクトで入ったリスト
+        
+        Returns
+        -------
+        furniture_info : list
+            各家具の情報が記録してある辞書オブジェクトが入ってるリスト
+        """
         x_coords = [edge[0] for edge in self.edges]
         y_coords = [edge[1] for edge in self.edges]
         min_x, max_x = min(x_coords), max(x_coords)
@@ -249,14 +261,30 @@ class Room():
                     furniture_info.append(dic)
                     break
         return furniture_info
-    """             
-    def make_random(self, random_furniture:list save_path:str, num:int):
-        for _ in range(num):
-            fig, ax = plt.subplots()
-            self.random_plot_furniture(random_furniture, ax)
-            fig.savefig(fsasa/save_path)
-    """
+   
 def main(room_edges:list, random_furniture:list, save_path:str, num:int, windows:list=None, doors:list=None):
+    """データセットの作成にメインで使う関数
+
+    Parameters
+    ---------
+    room_edges : list
+        部屋の隅の座標をいれたリスト（正方形、長方形なら４つ）
+    random_furniture : list
+        配置する家具の情報を辞書オブジェクトでいれたリスト
+    save_path : str
+        家具配置した画像たちを保存するパス
+    num : int
+        何パターンの家具配置画像を出力するか
+    windows : list
+        部屋の窓の端を示したもの(詳しくはRoomクラスの説明で)
+    doors : list
+        部屋のドアの端を示したもの(詳しくはRoomクラスの説明で)
+
+    Returns
+    -------
+    room_info : pd.DataFrame
+        各家具配置パターンでの家具の情報が入ったdataframe
+    """
     if os.path.isfile(f"""{os.getcwd()}/dataset/room_info.xlsx"""):
         room_info = pd.read_excel(f"""{os.getcwd()}/dataset/room_info.xlsx""", engine="openpyxl")
     else:  # If file does not exist, create a new DataFrame
