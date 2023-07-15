@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "48275b88932d505935365f0f20d728840eec7de72f980a17f1b253850e89613c"
+            "sha256": "87c944a2983d6ea257962488fbe133cebf642fd4f0648b368d55dae6737c7581"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -85,6 +85,14 @@
             ],
             "index": "pypi",
             "version": "==4.38.0"
+        },
+        "importlib-resources": {
+            "hashes": [
+                "sha256:4cf94875a8368bd89531a756df9a9ebe1f150e0f885030b461237bc7f2d905f2",
+                "sha256:d952faee11004c045f785bb5636e8f885bed30dc3c940d5d42798a2a4541c185"
+            ],
+            "index": "pypi",
+            "version": "==6.0.0"
         },
         "kiwisolver": {
             "hashes": [
@@ -470,6 +478,14 @@
             ],
             "index": "pypi",
             "version": "==2.0.1"
+        },
+        "zipp": {
+            "hashes": [
+                "sha256:679e51dd4403591b2d6838a48de3d283f3d188412a9782faadf845f298736ba0",
+                "sha256:ebc15946aa78bd63458992fc81ec3b6f7b1e92d51c35e6de1c3804e73b799147"
+            ],
+            "index": "pypi",
+            "version": "==3.16.2"
         }
     },
     "develop": {}

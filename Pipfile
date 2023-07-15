@@ -23,6 +23,8 @@ six = "==1.16.0"
 typing-extensions = "==4.7.1"
 tzdata = "==2023.3"
 xlrd = "==2.0.1"
+importlib-resources = "*"
+zipp = "*"
 
 [dev-packages]
 
