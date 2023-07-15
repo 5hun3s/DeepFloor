@@ -59,6 +59,8 @@ def multi_check_overlap(obj1, objs2):
     return False
 
 class Furniture():
+    """家具クラス
+    """
     def __init__(self, v_width:float, h_width:float, rotation:int=0, name:str=None, color:str=None):
         self.v_width = v_width
         self.h_width = h_width
@@ -67,21 +69,21 @@ class Furniture():
         self.color = color
 
 class Room():
+    """部屋クラス
+    """
     def __init__(self, edges:list, windows:list=None, doors:list=None):
         """
-        座標は左下を点とする
-        
         Parameters
         ----------
         edges : list
             部屋の角の座標(左下を始点に時計周りで記述)[[x座標, y座標], [float, float], ]
         windows : list
-            窓の情報(左下を始点に時計周りで記述)[
+            窓の情報[
             {"start":[x座標, y座標], "end":[x座標, y座標]},
             {"start":[x座標, y座標], "end":[x座標, y座標]},
             ]
         doors : list
-            ドアの情報(左下を始点に時計周りで記述)[
+            ドアの情報[
             {"start":[x座標, y座標], "end":[x座標, y座標]},
             {"start":[x座標, y座標], "end":[x座標, y座標]},,
             ]
@@ -96,6 +98,8 @@ class Room():
         self.furniture_text_objects = []
         
     def plot_room(self, ax):
+        """家具を抜きにした部屋と窓、ドアを描画するメソッド
+        """
         x_coords = [edge[0] for edge in self.edges]
         y_coords = [edge[1] for edge in self.edges]
         
@@ -148,6 +152,20 @@ class Room():
             self.line_objects.append(calculate_line)
         
     def plot_furniture(self, ax, furnitures:list, furnitures_coord:list):
+        """家具を配置するメソッド
+
+        Parameters
+        ----------
+        furnitures : list
+            家具オブジェクトが入ったリスト
+        furniture_coord : list
+            家具オブジェクトの位置が入ったリスト
+
+        Retruns
+        ------
+        error_flag : list
+            配置した家具の状態を表した数字が格納されたリスト(1:壁と重ねっている、2:他の家具に重なっている、0:正常に配置されている)
+        """
         error_flag = list()
         x_coords = [edge[0] for edge in self.edges]
         y_coords = [edge[1] for edge in self.edges]
@@ -176,6 +194,15 @@ class Room():
  
 
     def clear_furniture(self, ax, furniture_index:int=None, all_clear:bool=False):
+        """配置した家具を削除するメソッド
+
+        Parameters
+        ---------
+        furniture_index : int
+            削除したい家具のfurnitureにおけるインデックス値
+        all_clear : bool
+            描画した家具全てを削除するかどうか
+        """
         if furniture_index!=None:
             self.furniture_draw_objects[furniture_index].remove()
             self.direction_lines[furniture_index].remove()
