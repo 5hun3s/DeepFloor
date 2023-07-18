@@ -11,6 +11,14 @@ import os
 import copy
 
 def create_rectangle(center, width, height, angle, color):
+    """四角形を作成する関数
+    Returns
+    -------
+    rectangle : matplotlib.patches.Rectangle
+        描画するための四角形のオブジェクト
+    rectangle_polygon : shapely.geometry.polygon.Polygon
+        あたり判定を計算するために仮想的に作成された四角形
+    """
     rectangle = patches.Rectangle((center[0] - width / 2.0, center[1] - height / 2.0), width, height, angle=angle, fill=False, edgecolor=color)
     rectangle_coordinates = [(center[0] - width / 2.0, center[1] - height / 2.0), 
                              (center[0] - width / 2.0, center[1] + height / 2.0), 
@@ -22,11 +30,21 @@ def create_rectangle(center, width, height, angle, color):
 
 
 def create_line(start, end, color):
+    """部屋の枠を表す線を作成する関数
+    Returns
+    -------
+    line : matplotlib.lines.Line2D
+        描画するための四角形のオブジェクト
+    line_polygon : shapely.geometry.LineString
+        あたり判定を計算するために仮想的に作成された四角形
+    """
     line_polygon = LineString([(start[0], start[1]), (end[0], end[1])])
     line = Line2D([start[0], end[0]], [start[1], end[1]], color=color)
     return line, line_polygon
-#chatGPTにより追加
+
 def create_direction_line(center, angle, color):
+    """家具の回転を表す棒を描画するための関数
+    """
     end_point = (center[0] + math.cos(math.radians(angle)), center[1] + math.sin(math.radians(angle)))
     line, line_polygon = create_line(center, end_point, color)
     return line, line_polygon
@@ -34,24 +52,37 @@ def create_direction_line(center, angle, color):
 def plot_line(line, ax):
     ax.add_line(line)
     
-# 中心を見つける関数
 def find_center(points):
+    """中心を見つけるための関数
+    """
     x_coords = [p[0] for p in points]
     y_coords = [p[1] for p in points]
     center_x = sum(x_coords) / len(points)
     center_y = sum(y_coords) / len(points)
     return (center_x, center_y)
 
-# 角度を計算する関数
+
 def calculate_angle(point, center):
+    """角度を計算する関数
+    """
     return math.atan2(point[1] - center[1], point[0] - center[0])
 
-# 各点を角度に基づいてソートする関数
 def sort_points(points):
+    """各点を角度に基づいてソートする関数
+    """
     center = find_center(points)
     return sorted(points, key=lambda point: calculate_angle(point, center))
 
-def multi_check_overlap(obj1, objs2):
+def multi_check_overlap(obj1, objs2:list):
+    """あたり判定を計算する関数
+    
+    Parameters
+    ---------
+    obj1 : shapely.geometry.polygon.Polygon
+        あたり判定を計算するために作成された四角形のオブジェクト
+    obj2 : list
+        あたり判定を計算するために作成された四角形のオブジェクトが複数格納されたリスト
+    """
     for obj in objs2:
         if obj.intersects(obj1):
             return True
@@ -185,8 +216,6 @@ class Room():
                 error_flag.append(2)
             else:
                 error_flag.append(0)
-           
-
             ax.add_patch(draw_furniture)
             self.furniture_objects.append(calculate_furniture)
             self.furniture_draw_objects.append(draw_furniture)
@@ -294,10 +323,10 @@ def main(room_edges:list, random_furniture:list, num:int, windows:list=None, doo
     """
     if os.path.isfile(f"""{os.getcwd()}/dataset/room_info.xlsx"""):
         room_info = pd.read_excel(f"""{os.getcwd()}/dataset/room_info.xlsx""", engine="openpyxl")
-    else:  # If file does not exist, create a new DataFrame
+    else:
         room_info = pd.DataFrame()
-    image_num = len(os.listdir(f"""{os.getcwd()}/dataset/uninspected""")) + len(os.listdir(f"""{os.getcwd()}/dataset/inspected"""))
-    room_h_len, room_v_len = find_max_values(room_edges)
+    image_num = len(os.listdir(f"""{os.getcwd()}/dataset/uninspected""")) + len(os.listdir(f"""{os.getcwd()}/dataset/inspected"""))# 現在生成されたデータ数をカウント
+    room_h_len, room_v_len = find_max_values(room_edges)# 部屋の縦幅、横幅を取得
     room_h_len -= 1
     room_v_len -= 1
     for _ in range(num):
@@ -305,35 +334,26 @@ def main(room_edges:list, random_furniture:list, num:int, windows:list=None, doo
         room = Room(room_edges, windows=windows, doors=doors)
         room.plot_room(ax)
         #家具をランダムで複製
-        new_random_furniture = list()
-        for f in random_furniture:
-            print(random_furniture)
-            produce_n = random.randint(0, random_produce_n)#家具をおかない場合も発生
-            if produce_n != 0:
-                for n in range(produce_n):
-                    cur_dic = copy.deepcopy(f)
-                    cur_dic["name"] = f"""{f["name"]}_{n+1}"""
-                    new_random_furniture.append(cur_dic)
-            elif produce_n == 0:
-                continue
+        new_random_furniture = make_random_furniture_set(random_furniture, random_produce_n)
         furniture_info_list = room.random_plot_furniture(random_furniture=new_random_furniture, ax=ax)
        
         #各家具の相対的な距離を算出したカラムを追加
         furniture_name_non_duplicated = ["sofa", "desk", "chair", "TV", "light", "plant", "shelf", "chest", "bed"]
         furniture_names = [f"{item}_{i}" for item in furniture_name_non_duplicated for i in range(1, 4)]#[sofa_1, sofa_2, ..]
-        
         for i in furniture_info_list:
             for furniture_name in furniture_names:
-                distance = find_dict_by_name(furniture_info_list, furniture_name, i)
-                i[f"""d_{furniture_name}"""] = distance
-        #print(furniture_info_list)
+                if i["name"]!=furniture_name:
+                    distance = find_dict_by_name(furniture_info_list, furniture_name, i)
+                    i[f"""d_{furniture_name}"""] = distance
+        
         for furniture_info in furniture_info_list:
-            #print(furniture_info)
             df = pd.DataFrame(furniture_info, index=[0])
-            df["room"] = f"""room_{str(_ + image_num)}"""
+            df["room"] = f"""room_{str(_ + image_num)}"""# dataframeに生成されたランダムな部屋配置の番号を追加
+            
             #部屋の縦横二関してのカラムを追加
             df["room_h_length"] = room_h_len
             df["room_v_length"] = room_v_len
+            
             room_info = pd.concat([room_info, df])
         fig.savefig(f"""{os.getcwd()}/dataset/uninspected/room_{str(_ + image_num)}.png""")
     room_info["target"] = "uninspected"
@@ -348,16 +368,61 @@ def calculate_distance(p1, p2):
     return math.sqrt((p1["x"] - p2["x"])**2 + (p1["y"] - p2["y"])**2)
 
 def find_dict_by_name(dict_list, name, selfdict):
+    """家具同士の距離を算出したカラムを作成する際に使用した関数
+
+    Parameters
+    ---------
+    dict_list : list
+        他の家具の情報が辞書形式で入ったリスト
+        ex) [{"name":"bed_1", "x":4, "y":3}, {"name":"sofa_1", "x":8, "y":2}]
+    name : str
+        selfdictの家具との距離を測りたい家具の名前
+        ex) bed_1
+    selfdict : dict
+        主観的な家具
+        ex) {"name":"sofa_1", "x":8, "y":2}
+    
+    Returns
+    ------
+    distance : float
+        二つの家具の距離
+        ex) sofa_1とbed_1の距離
+    """
     selfname = selfdict["name"]
     for dictionary in dict_list:
         if (dictionary.get("name") == name) and (name != selfname):
             distance = calculate_distance(selfdict, dictionary)
             return distance
     return 0
+
+def make_random_furniture_set(random_furniture, random_produce_n):
+    """家具の複製を行う関数
+
+    Parameters
+    ---------
+    random_furniture : list
+        配置する家具の情報を辞書オブジェクトでいれたリスト
+    random_produce_n : int
+        引数で渡された家具を複製して配置する家具の最大値
+
+    Returns
+    ------
+    dic_list : list
+        ランダムに複製された家具の情報が詰め込まれた辞書オブジェクトが複数入ったリスト
+    """
+    dic_list = list()
+    for f in random_furniture:
+        produce_n = random.randint(0, random_produce_n)#家具をおかない場合も発生
+        if produce_n != 0:
+            for n in range(produce_n):
+                cur_dic = copy.deepcopy(f)
+                cur_dic["name"] = f"""{f["name"]}_{n+1}"""
+                dic_list.append(cur_dic)
+        elif produce_n == 0:
+            continue
+    return dic_list
         
 if __name__ ==  "__main__":
-    #f_1 = Furniture(v_width=2, h_width=3, rotation=45, name="TV", color="red")
-    #f_2 = Furniture(v_width=2, h_width=2, rotation=0, name="bed", color="blue")
     room_h_length = 10
     room_v_length = 10
     edges = [
