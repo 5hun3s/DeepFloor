@@ -321,11 +321,11 @@ def main(room_edges:list, random_furniture:list, num:int, windows:list=None, doo
     room_info : pd.DataFrame
         各家具配置パターンでの家具の情報が入ったdataframe
     """
-    if os.path.isfile(f"""{os.getcwd()}/dataset/room_info.xlsx"""):
-        room_info = pd.read_excel(f"""{os.getcwd()}/dataset/room_info.xlsx""", engine="openpyxl")
+    if os.path.isfile(f"""{os.getcwd()}/dataset/room_info.csv"""):
+        room_info = pd.read_csv(f"""{os.getcwd()}/dataset/room_info.csv""")
     else:
         room_info = pd.DataFrame()
-    image_num = len(os.listdir(f"""{os.getcwd()}/dataset/uninspected""")) + len(os.listdir(f"""{os.getcwd()}/dataset/inspected"""))# 現在生成されたデータ数をカウント
+    image_num = len(os.listdir(f"""{os.getcwd()}/dataset/uninspected""")) + len(os.listdir(f"""{os.getcwd()}/dataset/inspected""")) + 1# 現在生成されたデータ数をカウント
     room_h_len, room_v_len = find_max_values(room_edges)# 部屋の縦幅、横幅を取得
     room_h_len -= 1
     room_v_len -= 1
@@ -333,29 +333,33 @@ def main(room_edges:list, random_furniture:list, num:int, windows:list=None, doo
         fig, ax = plt.subplots()
         room = Room(room_edges, windows=windows, doors=doors)
         room.plot_room(ax)
-        #家具をランダムで複製
         new_random_furniture = make_random_furniture_set(random_furniture, random_produce_n)
         furniture_info_list = room.random_plot_furniture(random_furniture=new_random_furniture, ax=ax)
-       
-        #各家具の相対的な距離を算出したカラムを追加
+
         furniture_name_non_duplicated = ["sofa", "desk", "chair", "TV", "light", "plant", "shelf", "chest", "bed"]
-        furniture_names = [f"{item}_{i}" for item in furniture_name_non_duplicated for i in range(1, 4)]#[sofa_1, sofa_2, ..]
+        furniture_names = [f"{item}_{i}" for item in furniture_name_non_duplicated for i in range(1, 4)]
+
+        # 各家具の情報を一つのリストにまとめる
+        all_furniture_info = {}
         for i in furniture_info_list:
             for furniture_name in furniture_names:
-                if i["name"]!=furniture_name:
+                if i["name"] != furniture_name:
                     distance = find_dict_by_name(furniture_info_list, furniture_name, i)
-                    i[f"""d_{furniture_name}"""] = distance
-        
-        for furniture_info in furniture_info_list:
-            df = pd.DataFrame(furniture_info, index=[0])
-            df["room"] = f"""room_{str(_ + image_num)}"""# dataframeに生成されたランダムな部屋配置の番号を追加
-            
-            #部屋の縦横二関してのカラムを追加
-            df["room_h_length"] = room_h_len
-            df["room_v_length"] = room_v_len
-            
-            room_info = pd.concat([room_info, df])
-        fig.savefig(f"""{os.getcwd()}/dataset/uninspected/room_{str(_ + image_num)}.png""")
+                    i[f"d_{furniture_name}"] = distance
+
+            # 各家具の情報を一つのリストに追加する
+            all_furniture_info.update(i)
+
+        # 部屋の縦横に関してのカラムを追加
+        all_furniture_info["room"] = f"room_{str(_ + image_num)}"
+        all_furniture_info["room_h_length"] = room_h_len
+        all_furniture_info["room_v_length"] = room_v_len
+
+        # データフレームに一行ずつ追加
+        room_info = room_info.append(all_furniture_info, ignore_index=True)
+
+        fig.savefig(f"{os.getcwd()}/dataset/uninspected/room_{str(_ + image_num)}.png")
+
     room_info["target"] = "uninspected"
     return room_info
 
@@ -453,7 +457,7 @@ if __name__ ==  "__main__":
     room_info = main(room_edges=edges, random_furniture=furniture_dic, num=100, windows=None, doors=None)
     print(room_info)
     print(room_info.shape)
-    room_info.to_excel(f"""{os.getcwd()}/dataset/room_info.xlsx""", index=False)
+    room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)
     #total.to_pickle(f"""{os.getcwd()}/dataset/room_info.pkl""", index=False)
 
         
