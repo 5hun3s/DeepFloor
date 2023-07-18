@@ -288,12 +288,21 @@ class Room():
                 dic["name"] = f_dic["name"]
                 dic["x"], dic["y"] = random.randint(min_x, max_x), random.randint(min_y, max_y)
                 dic["rotation"] = dic["rotation"] = random.choice(f_dic["rotation_range"])
+                delta = 0.1
+                if ("restriction" in f_dic) and (f_dic["restriction"] == "alongwall"):
+                    print("restrition")
+                    rand = random.choice([0, 1])
+                    if rand == 0:
+                        dic["x"], dic["y"] = random.choice([min_x + f_dic["h_width_range"] + delta, max_x - f_dic["h_width_range"] - delta]), random.randint(min_y, max_y)
+                    elif rand == 1:
+                        dic["x"], dic["y"] = random.randint(min_x, max_x), random.choice([min_y + f_dic["v_width_range"] + delta, max_y - f_dic["v_width_range"] - delta])
+                #elif ("restriction" in f_dic) and (f_dic["restriction"] == "alongwall")
                 fur = Furniture(f_dic["v_width_range"], f_dic["h_width_range"], dic["rotation"], f_dic["name"], f_dic["color"])
                 error_flag = self.plot_furniture(ax, [fur], [[dic["x"], dic["y"]]])#ポジションのエラーを追加
                 #error_flag = self.plot_furniture(ax, [furniture], dic["coord"])
-                if error_flag[0]!=0:
+                if (error_flag[0]!=0):
                     self.clear_furniture(ax, furniture_index=-1)
-                elif error_flag[0]==0:
+                elif (error_flag[0]==0):
                     furniture_info.append(dic)
                     break
         return furniture_info
@@ -439,14 +448,19 @@ if __name__ ==  "__main__":
     dors = [
         {"start":[10, 5], "end":[10, 6]}
     ]
+    """restrictionは家具の配置制限
+    alongwall :
+    alongwall_
+    
+    """
     furniture_dic = [
         {"v_width_range":0.5, "h_width_range":1.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"sofa", "color":"brown"},
         {"v_width_range":0.6, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"desk", "color":"orange"},
         {"v_width_range":0.5, "h_width_range":0.5, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chair", "color":"red"},
         #{"v_width_range":0.05, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"TV", "color":"blue"},
         {"v_width_range":0.4, "h_width_range":1.8, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"TV stand", "color":"navy"},
-        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"light", "color":"gold"},
-        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"plant", "color":"green"},
+        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0], "name":"light", "color":"gold", "restriction":"alongwall"},
+        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0], "name":"plant", "color":"green", "restriction":"alongwall"},
         {"v_width_range":0.3, "h_width_range":0.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"shelf", "color":"magenta"},
         {"v_width_range":0.5, "h_width_range":1, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chest", "color":"purple"},
     ]
