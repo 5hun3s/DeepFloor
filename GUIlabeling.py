@@ -37,13 +37,13 @@ while True:
             break
         window['-IMAGE-'].update(filename=os.path.join(folder, image))
 
-        if os.path.isfile(f"""{curdir}/dataset/room_info.xlsx"""):
-            df = pd.read_excel(f"""{curdir}/dataset/room_info.xlsx""", engine="openpyxl")
+        if os.path.isfile(f"""{curdir}/dataset/room_info_reform.xlsx"""):
+            df = pd.read_excel(f"""{curdir}/dataset/room_info_reform.xlsx""", engine="openpyxl")
         else:  # If file does not exist, create a new DataFrame
             df = pd.DataFrame()
         df.loc[df["room"]==old_image.split(".")[0], "target"] = "good"
         print(df)
-        df.to_excel(f"""{curdir}/dataset/room_info.xlsx""", index=False, engine="openpyxl")
+        df.to_excel(f"""{curdir}/dataset/room_info_reform.xlsx""", index=False, engine="openpyxl")
         # 移動元のファイルパス
         source_file = os.path.join(folder, old_image)
         # 移動先のディレクトリパス
@@ -60,13 +60,13 @@ while True:
             break
         window['-IMAGE-'].update(filename=os.path.join(folder, image))
 
-        if os.path.isfile(f"""{curdir}/dataset/room_info.xlsx"""):
-            df = pd.read_excel(f"""{curdir}/dataset/room_info.xlsx""", engine="openpyxl")
+        if os.path.isfile(f"""{curdir}/dataset/room_info_reform.xlsx"""):
+            df = pd.read_excel(f"""{curdir}/dataset/room_info_reform.xlsx""", engine="openpyxl")
         else:  # If file does not exist, create a new DataFrame
             df = pd.DataFrame()
         df.loc[df["room"]==old_image.split(".")[0], "target"] = "bad"
         print(df)
-        df.to_excel(f"""{curdir}/dataset/room_info.xlsx""", index=False, engine="openpyxl")
+        df.to_excel(f"""{curdir}/dataset/room_info_reform.xlsx""", index=False, engine="openpyxl")
         # 移動元のファイルパス
         source_file = os.path.join(folder, old_image)
         # 移動先のディレクトリパス
