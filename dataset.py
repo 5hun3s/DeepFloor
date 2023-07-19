@@ -193,7 +193,7 @@ class Room():
         furniture_coord : list
             家具オブジェクトの位置が入ったリスト
 
-        Retruns
+        Returns
         ------
         error_flag : list
             配置した家具の状態を表した数字が格納されたリスト(1:壁と重ねっている、2:他の家具に重なっている、0:正常に配置されている)
@@ -461,7 +461,7 @@ def main(room_edges:list, random_furniture:list, num:int, windows:list=None, doo
             df["room_v_length"] = room_v_len
             
             room_info = pd.concat([room_info, df])
-        fig.savefig(f"""{os.getcwd()}/dataset/uninspected/room_{str(_ + image_num)}.png""")
+        fig.savefig(f"""{os.getcwd()}/dataset/uninspected/room_{str(_ + image_num + 1)}.png""")
     room_info["target"] = "uninspected"
     return room_info
         
