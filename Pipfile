@@ -9,7 +9,7 @@ et-xmlfile = "==1.1.0"
 fonttools = "==4.38.0"
 kiwisolver = "==1.4.4"
 matplotlib = "*"
-numpy = "==1.21.6"
+numpy = "*"
 openpyxl = "*"
 packaging = "==23.1"
 pandas = "*"
@@ -25,6 +25,7 @@ tzdata = "==2023.3"
 xlrd = "==2.0.1"
 importlib-resources = "*"
 zipp = "*"
+scikit-learn = "*"
 
 [dev-packages]
 
