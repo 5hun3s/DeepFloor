@@ -495,8 +495,8 @@ if __name__ ==  "__main__":
         {"v_width_range":0.5, "h_width_range":0.5, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chair", "color":"red"},
         #{"v_width_range":0.05, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"TV", "color":"blue"},
         {"v_width_range":0.4, "h_width_range":1.8, "rotation_range":[0, 90, 180, 270, 360], "name":"TV stand", "color":"navy", "restriction":"alongwall"},
-        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0], "name":"light", "color":"gold", "restriction":"alongwall"},
-        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0], "name":"plant", "color":"green", "restriction":"alongwall"},
+        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"light", "color":"gold", "restriction":"alongwall"},
+        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"plant", "color":"green", "restriction":"alongwall"},
         {"v_width_range":0.3, "h_width_range":0.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"shelf", "color":"magenta"},
         {"v_width_range":0.5, "h_width_range":1, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chest", "color":"purple"},
     ]
