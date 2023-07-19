@@ -225,8 +225,10 @@ class Room():
             draw_furniture, calculate_furniture = create_rectangle(coord, furniture.h_width, furniture.v_width, furniture.rotation, furniture.color)
             furniture_name_text = ax.text(coord[0], coord[1], furniture.name, color=furniture.color, fontsize=13) # added this line
             self.furniture_text_objects.append(furniture_name_text) # added this line
+            
             draw_direction, _ = create_direction_line(coord, furniture.rotation, furniture.color, furniture.h_width, furniture.v_width) # add this line
             plot_line(draw_direction, ax)#add this line
+            
             self.direction_lines.append(draw_direction)
             if (multi_check_overlap(calculate_furniture, self.line_objects)) or (coord[0]<min_x) or (coord[0]>max_x) or (coord[1]<min_y) or (coord[1]>max_y):
                 error_flag.append(1)
@@ -287,125 +289,55 @@ class Room():
         furniture_info = list()
         for f_dic in random_furniture:
             dic = dict()
-            while True:
-                """家具の幅もランダム
-                #dic["v_width"] = random.randint(f_dic["v_width_range"][0], f_dic["v_width_range"][1])
-                #dic["h_width"] = random.randint(f_dic["h_width_range"][0], f_dic["h_width_range"][1])
-                #dic["rotation"] = random.choice(f_dic["rotation_range"])
-                #dic["name"] = f_dic["name"]
-                #dic["color"] = f_dic["color"]
-                """
-                """置く場所と角度だけランダム
-                dic["v_width"] = f_dic["v_width_range"]
-                dic["h_width"] = f_dic["h_width_range"]
-                dic["rotation"] = random.choice(f_dic["rotation_range"])
-                dic["name"] = f_dic["name"]
-                dic["color"] = f_dic["color"]
-                """
-                #dic["coord"] = [[random.randint(min_x, max_x), random.randint(min_y, max_y)]]
-                dic["name"] = f_dic["name"]
-                delta = 0.1
-                """
-                if ("restriction" in f_dic) and (f_dic["restriction"] == "alongwall direct center"):
-                    
-                    rand = random.choice([0, 1, 2, 3])
-                    print(rand)
-                    if rand == 0:
-                        dic["x"], dic["y"] = min_x + f_dic["v_width_range"] + delta, random.randint(min_y, max_y)
-                        dic["rotation"] = random.choice(f_dic["rotation_range"])
-                    elif rand == 1:
-                        dic["x"], dic["y"] = random.randint(min_x, max_x), max_y - f_dic["v_width_range"] - delta
-                        dic["rotation"] = random.choice(f_dic["rotation_range"])
-                    elif rand == 2:
-                        dic["x"], dic["y"] = max_x - f_dic["v_width_range"] - delta, random.randint(min_y, max_y)
-                        dic["rotation"] = 90
-                    elif rand == 3:
-                        dic["x"], dic["y"] = random.randint(min_x, max_x), min_y + f_dic["v_width_range"] + delta
-                        dic["rotation"] = random.choice(f_dic["rotation_range"])
-                """
-                if ("restriction" in f_dic) and (f_dic["restriction"] == "alongwall"):
-                    rand = random.choice([0, 1])
-                    if rand == 0:
-                        dic["x"], dic["y"] = random.choice([min_x + delta, max_x - delta]), random.randint(min_y, max_y)
-                    elif rand == 1:
-                        dic["x"], dic["y"] = random.randint(min_x, max_x), random.choice([min_y + delta, max_y - delta])
-                    dic["rotation"] = random.choice(f_dic["rotation_range"])
-                elif "restriction" not in f_dic:
-                    dic["x"], dic["y"] = random.randint(min_x, max_x), random.randint(min_y, max_y)
-                    dic["rotation"] = dic["rotation"] = random.choice(f_dic["rotation_range"])
 
-                #elif ("restriction" in f_dic) and (f_dic["restriction"] == "alongwall")
-                fur = Furniture(f_dic["v_width_range"], f_dic["h_width_range"], dic["rotation"], f_dic["name"], f_dic["color"])
-                error_flag = self.plot_furniture(ax, [fur], [[dic["x"], dic["y"]]])#ポジションのエラーを追加
-                #error_flag = self.plot_furniture(ax, [furniture], dic["coord"])
-                if (error_flag[0]!=0):
-                    self.clear_furniture(ax, furniture_index=-1)
-                elif (error_flag[0]==0):
-                    furniture_info.append(dic)
-                    break
+            prob = f_dic['prob']
+            name = f_dic['name']
+            if random.random() < prob:
+                while True:
+                    """家具の幅もランダム
+                    #dic["v_width"] = random.randint(f_dic["v_width_range"][0], f_dic["v_width_range"][1])
+                    #dic["h_width"] = random.randint(f_dic["h_width_range"][0], f_dic["h_width_range"][1])
+                    #dic["rotation"] = random.choice(f_dic["rotation_range"])
+                    #dic["name"] = f_dic["name"]
+                    #dic["color"] = f_dic["color"]
+                    """
+                    """置く場所と角度だけランダム
+                    dic["v_width"] = f_dic["v_width_range"]
+                    dic["h_width"] = f_dic["h_width_range"]
+                    dic["rotation"] = random.choice(f_dic["rotation_range"])
+                    dic["name"] = f_dic["name"]
+                    dic["color"] = f_dic["color"]
+                    """
+                    #dic["coord"] = [[random.randint(min_x, max_x), random.randint(min_y, max_y)]]
+                    dic["name"] = name
+                    dic['exist'] = 1
+                    if ("restriction" in f_dic) and (f_dic["restriction"] == "alongwall"):
+                        rand = random.choice([0, 1])
+                        if rand == 0:
+                            dic["x"], dic["y"] = random.choice([min_x + delta, max_x - delta]), random.randint(min_y, max_y)
+                        elif rand == 1:
+                            dic["x"], dic["y"] = random.randint(min_x, max_x), random.choice([min_y + delta, max_y - delta])
+                        dic["rotation"] = random.choice(f_dic["rotation_range"])
+                    elif "restriction" not in f_dic:
+                        dic["x"], dic["y"] = random.randint(min_x, max_x), random.randint(min_y, max_y)
+                        dic["rotation"] = dic["rotation"] = random.choice(f_dic["rotation_range"])
+                    fur = Furniture(f_dic["v_width_range"], f_dic["h_width_range"], dic["rotation"], f_dic["name"], f_dic["color"])
+                    error_flag = self.plot_furniture(ax, [fur], [[dic["x"], dic["y"]]])#ポジションのエラーを追加
+                    #error_flag = self.plot_furniture(ax, [furniture], dic["coord"])
+                    if error_flag[0]!=0:
+                        self.clear_furniture(ax, furniture_index=-1)
+                    elif error_flag[0]==0:
+                        furniture_info.append(dic)
+                        break
+            else:
+                dic["name"] = name
+                dic['exist'] = 0
+                dic["x"], dic["y"] = 0, 0
+                dic["rotation"] = 0
+                furniture_info.append(dic)
+
         return furniture_info
    
-def main(room_edges:list, random_furniture:list, num:int, windows:list=None, doors:list=None, random_produce_n:int=3):
-    """データセットの作成にメインで使う関数
-
-    Parameters
-    ---------
-    room_edges : list
-        部屋の隅の座標をいれたリスト（正方形、長方形なら４つ）
-    random_furniture : list
-        配置する家具の情報を辞書オブジェクトでいれたリスト
-    num : int
-        何パターンの家具配置画像を出力するか
-    windows : list
-        部屋の窓の端を示したもの(詳しくはRoomクラスの説明で)
-    doors : list
-        部屋のドアの端を示したもの(詳しくはRoomクラスの説明で)
-    random_produce_n : int
-        引数で渡された家具を複製して配置する家具の最大値
-
-    Returns
-    -------
-    room_info : pd.DataFrame
-        各家具配置パターンでの家具の情報が入ったdataframe
-    """
-    if os.path.isfile(f"""{os.getcwd()}/dataset/room_info.xlsx"""):
-        room_info = pd.read_excel(f"""{os.getcwd()}/dataset/room_info.xlsx""", engine="openpyxl")
-    else:
-        room_info = pd.DataFrame()
-    image_num = len(os.listdir(f"""{os.getcwd()}/dataset/uninspected""")) + len(os.listdir(f"""{os.getcwd()}/dataset/inspected"""))# 現在生成されたデータ数をカウント
-    room_h_len, room_v_len = find_max_values(room_edges)# 部屋の縦幅、横幅を取得
-    room_h_len -= 1
-    room_v_len -= 1
-    for _ in range(num):
-        fig, ax = plt.subplots()
-        room = Room(room_edges, windows=windows, doors=doors)
-        room.plot_room(ax)
-        #家具をランダムで複製
-        new_random_furniture = make_random_furniture_set(random_furniture, random_produce_n)
-        furniture_info_list = room.random_plot_furniture(random_furniture=new_random_furniture, ax=ax)
-       
-        #各家具の相対的な距離を算出したカラムを追加
-        furniture_name_non_duplicated = ["sofa", "desk", "chair", "TV", "light", "plant", "shelf", "chest", "bed"]
-        furniture_names = [f"{item}_{i}" for item in furniture_name_non_duplicated for i in range(1, 4)]#[sofa_1, sofa_2, ..]
-        for i in furniture_info_list:
-            for furniture_name in furniture_names:
-                if i["name"]!=furniture_name:
-                    distance = find_dict_by_name(furniture_info_list, furniture_name, i)
-                    i[f"""d_{furniture_name}"""] = distance
-        
-        for furniture_info in furniture_info_list:
-            df = pd.DataFrame(furniture_info, index=[0])
-            df["room"] = f"""room_{str(_ + image_num)}"""# dataframeに生成されたランダムな部屋配置の番号を追加
-            
-            #部屋の縦横二関してのカラムを追加
-            df["room_h_length"] = room_h_len
-            df["room_v_length"] = room_v_len
-            
-            room_info = pd.concat([room_info, df])
-        fig.savefig(f"""{os.getcwd()}/dataset/uninspected/room_{str(_ + image_num + 1)}.png""")
-    room_info["target"] = "uninspected"
-    return room_info
-
 def find_max_values(arr):
     max_val_1 = max(arr, key=lambda x: x[0])[0]
     max_val_2 = max(arr, key=lambda x: x[1])[1]
@@ -442,7 +374,7 @@ def find_dict_by_name(dict_list, name, selfdict):
             return distance
     return 0
 
-def make_random_furniture_set(random_furniture, random_produce_n):
+def make_random_furniture_prob_set(random_furniture, max_produce_n:int=3):
     """家具の複製を行う関数
 
     Parameters
@@ -457,17 +389,111 @@ def make_random_furniture_set(random_furniture, random_produce_n):
     dic_list : list
         ランダムに複製された家具の情報が詰め込まれた辞書オブジェクトが複数入ったリスト
     """
+    prob_dict ={'bed':[0.9, 0.1, 0],
+                'sofa':[0.9, 0.1, 0],
+                'desk':[0.9, 0.1, 0],
+                'chair':[1, 0.5, 0.2],
+                'TV stand':[0.8, 0, 0],
+                'light':[0.9, 0.1, 0.1],
+                'plant':[0.7, 0.1, 0.1],
+                'shelf':[0.9, 0.1, 0],
+                'chest':[0.9, 0.1, 0]}
     dic_list = list()
     for f in random_furniture:
-        produce_n = random.randint(0, random_produce_n)#家具をおかない場合も発生
-        if produce_n != 0:
-            for n in range(produce_n):
-                cur_dic = copy.deepcopy(f)
-                cur_dic["name"] = f"""{f["name"]}_{n+1}"""
-                dic_list.append(cur_dic)
-        elif produce_n == 0:
-            continue
+        produce_n = 3 #家具をおかない場合も発生
+        for n in range(produce_n):
+            cur_dic = copy.deepcopy(f)
+            cur_dic['prob'] = prob_dict[cur_dic['name']][n]
+            cur_dic["name"] = f"""{f["name"]}_{n+1}"""            
+            dic_list.append(cur_dic)
+        continue
     return dic_list
+
+def reformat_dataframe(df):
+    # 'room'カラムでグループ化し、その他のカラムを連結します
+    df_grouped = df.groupby('room').agg(lambda x: x.tolist())
+
+    # 新しいデータフレームを作成します
+    df_new = pd.DataFrame()
+
+    # グループ化したデータフレームをループして、新しいカラムを作成します
+    for index, row in df_grouped.iterrows():
+        for furniture_name in df.columns:
+            if furniture_name != 'room':
+                # カラム名を`<furniture_name>_<column>`形式に変更します
+                new_columns = [f'{furniture_name}_{i}' for i in range(len(row[furniture_name]))]
+                
+                # 新しいカラムをデータフレームに追加します
+                for i, new_column in enumerate(new_columns):
+                    df_new.at[index, new_column] = row[furniture_name][i]
+
+    # 新しいデータフレームを返します
+    return df_new
+
+def main(room_edges:list, random_furniture:list, num:int, windows:list=None, doors:list=None, random_produce_n:int=3):
+    """データセットの作成にメインで使う関数
+
+    Parameters
+    ---------
+    room_edges : list
+        部屋の隅の座標をいれたリスト（正方形、長方形なら４つ）
+    random_furniture : list
+        配置する家具の情報を辞書オブジェクトでいれたリスト
+    num : int
+        何パターンの家具配置画像を出力するか
+    windows : list
+        部屋の窓の端を示したもの(詳しくはRoomクラスの説明で)
+    doors : list
+        部屋のドアの端を示したもの(詳しくはRoomクラスの説明で)
+    random_produce_n : int
+        引数で渡された家具を複製して配置する家具の最大値
+
+    Returns
+    -------
+    room_info : pd.DataFrame
+        各家具配置パターンでの家具の情報が入ったdataframe
+    """
+    if os.path.isfile(f"""{os.getcwd()}/dataset/room_info.csv"""):
+        room_info = pd.read_csv(f"""{os.getcwd()}/dataset/room_info.csv""")
+    else:
+        room_info = pd.DataFrame()
+    image_num = len(os.listdir(f"""{os.getcwd()}/dataset/uninspected""")) + len(os.listdir(f"""{os.getcwd()}/dataset/inspected"""))# 現在生成されたデータ数をカウント
+    room_h_len, room_v_len = find_max_values(room_edges)# 部屋の縦幅、横幅を取得
+    room_h_len -= 1
+    room_v_len -= 1
+    for _ in range(num):
+        fig, ax = plt.subplots()
+        room = Room(room_edges, windows=windows, doors=doors)
+        room.plot_room(ax)
+        #家具をランダムで複製
+        new_random_furniture = make_random_furniture_prob_set(random_furniture, random_produce_n)
+        furniture_info_list = room.random_plot_furniture(random_furniture=new_random_furniture, ax=ax)
+       
+        #各家具の相対的な距離を算出したカラムを追加
+        furniture_name_non_duplicated = ["sofa", "desk", "chair", "TV", "light", "plant", "shelf", "chest", "bed"]
+        furniture_names = [f"{item}_{i}" for item in furniture_name_non_duplicated for i in range(1, 4)]#[sofa_1, sofa_2, ..]
+        for i in furniture_info_list:
+            for furniture_name in furniture_names:
+                if i['exist'] == 0:
+                    i[f'd_{furniture_name}'] = 0
+                elif i["name"]!=furniture_name:
+                    distance = find_dict_by_name(furniture_info_list, furniture_name, i)
+                    i[f"""d_{furniture_name}"""] = distance
+                else:
+                    i[f'd_{furniture_name}'] = 0
+        
+        for furniture_info in furniture_info_list:
+            df = pd.DataFrame(furniture_info, index=[0])
+            df["room"] = f"""room_{str(_ + image_num)}"""# dataframeに生成されたランダムな部屋配置の番号を追加
+            
+            #部屋の縦横二関してのカラムを追加
+            df["room_h_length"] = room_h_len
+            df["room_v_length"] = room_v_len
+            
+            room_info = pd.concat([room_info, df])
+        fig.savefig(f"""{os.getcwd()}/dataset/uninspected/room_{str(_ + image_num + 1)}.png""")
+    room_info["target"] = "uninspected"
+    return room_info
         
 if __name__ ==  "__main__":
     room_h_length = 10
@@ -490,6 +516,7 @@ if __name__ ==  "__main__":
     alongwall : 壁際に配置する
     """
     furniture_dic = [
+        {"v_width_range":0.5, "h_width_range":1.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"bed", "color":"blue"},
         {"v_width_range":0.5, "h_width_range":1.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"sofa", "color":"brown"},
         {"v_width_range":0.6, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"desk", "color":"orange"},
         {"v_width_range":0.5, "h_width_range":0.5, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chair", "color":"red"},
@@ -503,7 +530,10 @@ if __name__ ==  "__main__":
     room_info = main(room_edges=edges, random_furniture=furniture_dic, num=20, windows=None, doors=None)
     print(room_info)
     print(room_info.shape)
-    room_info.to_excel(f"""{os.getcwd()}/dataset/room_info.xlsx""", index=False)
+    room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)
     #total.to_pickle(f"""{os.getcwd()}/dataset/room_info.pkl""", index=False)
+    print('finished')
 
-        
+df = pd.read_csv(f"""{os.getcwd()}/dataset/room_info.csv""")  # CSVファイルを読み込みます
+df_reform = reformat_dataframe(df)  # 関数を呼び出してデータフレームを変換します
+df_reform.to_csv(f"""{os.getcwd()}/dataset/room_info_reform.csv""", index=False)  # 新しいデータフレームを表示します
