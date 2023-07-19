@@ -19,13 +19,13 @@ def create_rectangle(center, width, height, angle, color):
     rectangle_polygon : shapely.geometry.polygon.Polygon
         あたり判定を計算するために仮想的に作成された四角形
     """
-    rectangle = patches.Rectangle((center[0] - width / 2.0, center[1] - height / 2.0), width, height, angle=angle, fill=False, edgecolor=color)
-    rectangle_coordinates = [(center[0] - width / 2.0, center[1] - height / 2.0), 
-                             (center[0] - width / 2.0, center[1] + height / 2.0), 
-                             (center[0] + width / 2.0, center[1] + height / 2.0), 
-                             (center[0] + width / 2.0, center[1] - height / 2.0)]
+    rectangle = patches.Rectangle((center[0], center[1]), width, height, angle=angle, fill=False, edgecolor=color)
+    rectangle_coordinates = [(center[0], center[1]), 
+                             (center[0], center[1] + height), 
+                             (center[0] + width, center[1] + height), 
+                             (center[0] + width, center[1])]
     rectangle_polygon = Polygon(rectangle_coordinates)
-    rectangle_polygon = rotate(rectangle_polygon, angle, origin=(center[0] - width / 2.0, center[1] - height / 2.0))
+    rectangle_polygon = rotate(rectangle_polygon, angle, origin=(center[0], center[1]))
     return rectangle, rectangle_polygon
 
 
@@ -42,11 +42,29 @@ def create_line(start, end, color):
     line = Line2D([start[0], end[0]], [start[1], end[1]], color=color)
     return line, line_polygon
 
-def create_direction_line(center, angle, color):
+def trigonometric_addition_sin(sin_a:float, cos_a:float, b:int):
+    """sin(a + b) = sin(a)cos(b) + cos(a)sin(b)を計算します
+    """
+    return sin_a * math.cos(math.radians(b)) + cos_a * math.sin(math.radians(b))
+
+def trigonometric_addition_cos(sin_a:float, cos_a:float, b:int):
+    """cos(a + b) = cos(a)cos(b) - sin(a)sin(b)を計算します"""
+    return cos_a * math.cos(math.radians(b)) - sin_a * math.sin(math.radians(b))
+
+def create_direction_line(center, angle, color, furniture_h_len, furniture_v_len):
     """家具の回転を表す棒を描画するための関数
     """
-    end_point = (center[0] + math.cos(math.radians(angle)), center[1] + math.sin(math.radians(angle)))
-    line, line_polygon = create_line(center, end_point, color)
+    r = math.sqrt((furniture_h_len/2)**2 + (furniture_v_len/2)**2)
+
+    start_point = (
+        center[0] + r * trigonometric_addition_cos((furniture_v_len/2)/r, (furniture_h_len/2)/r, angle),
+        center[1] + r * trigonometric_addition_sin((furniture_v_len/2)/r, (furniture_h_len/2)/r, angle)
+        )
+    end_point = (
+        center[0] + math.cos(math.radians(angle)) + r * trigonometric_addition_cos((furniture_v_len/2)/r, (furniture_h_len/2)/r, angle), 
+        center[1] + math.sin(math.radians(angle)) + r * trigonometric_addition_sin((furniture_v_len/2)/r, (furniture_h_len/2)/r, angle)
+        )
+    line, line_polygon = create_line(start_point, end_point, color)
     return line, line_polygon
 
 def plot_line(line, ax):
@@ -207,10 +225,12 @@ class Room():
             draw_furniture, calculate_furniture = create_rectangle(coord, furniture.h_width, furniture.v_width, furniture.rotation, furniture.color)
             furniture_name_text = ax.text(coord[0], coord[1], furniture.name, color=furniture.color, fontsize=13) # added this line
             self.furniture_text_objects.append(furniture_name_text) # added this line
-            draw_direction, _ = create_direction_line(coord, furniture.rotation, furniture.color) # add this line
-            plot_line(draw_direction, ax) #add this line
+            
+            draw_direction, _ = create_direction_line(coord, furniture.rotation, furniture.color, furniture.h_width, furniture.v_width) # add this line
+            plot_line(draw_direction, ax)#add this line
+            
             self.direction_lines.append(draw_direction)
-            if (multi_check_overlap(calculate_furniture, self.line_objects)) or (coord[0]-max([furniture.h_width, furniture.v_width])<min_x) or (coord[0]+max([furniture.h_width, furniture.v_width])>max_x) or (coord[1]-max([furniture.h_width, furniture.v_width])<min_y) or (coord[1]+max([furniture.h_width, furniture.v_width])>max_y):
+            if (multi_check_overlap(calculate_furniture, self.line_objects)) or (coord[0]<min_x) or (coord[0]>max_x) or (coord[1]<min_y) or (coord[1]>max_y):
                 error_flag.append(1)
             elif multi_check_overlap(calculate_furniture, self.furniture_objects):
                 error_flag.append(2)
@@ -269,6 +289,7 @@ class Room():
         furniture_info = list()
         for f_dic in random_furniture:
             dic = dict()
+
             prob = f_dic['prob']
             name = f_dic['name']
             if random.random() < prob:
@@ -290,8 +311,16 @@ class Room():
                     #dic["coord"] = [[random.randint(min_x, max_x), random.randint(min_y, max_y)]]
                     dic["name"] = name
                     dic['exist'] = 1
-                    dic["x"], dic["y"] = random.randint(min_x, max_x), random.randint(min_y, max_y)
-                    dic["rotation"] = random.choice(f_dic["rotation_range"])
+                    if ("restriction" in f_dic) and (f_dic["restriction"] == "alongwall"):
+                        rand = random.choice([0, 1])
+                        if rand == 0:
+                            dic["x"], dic["y"] = random.choice([min_x + delta, max_x - delta]), random.randint(min_y, max_y)
+                        elif rand == 1:
+                            dic["x"], dic["y"] = random.randint(min_x, max_x), random.choice([min_y + delta, max_y - delta])
+                        dic["rotation"] = random.choice(f_dic["rotation_range"])
+                    elif "restriction" not in f_dic:
+                        dic["x"], dic["y"] = random.randint(min_x, max_x), random.randint(min_y, max_y)
+                        dic["rotation"] = dic["rotation"] = random.choice(f_dic["rotation_range"])
                     fur = Furniture(f_dic["v_width_range"], f_dic["h_width_range"], dic["rotation"], f_dic["name"], f_dic["color"])
                     error_flag = self.plot_furniture(ax, [fur], [[dic["x"], dic["y"]]])#ポジションのエラーを追加
                     #error_flag = self.plot_furniture(ax, [furniture], dic["coord"])
@@ -306,6 +335,7 @@ class Room():
                 dic["x"], dic["y"] = 0, 0
                 dic["rotation"] = 0
                 furniture_info.append(dic)
+
         return furniture_info
    
 def find_max_values(arr):
@@ -482,19 +512,22 @@ if __name__ ==  "__main__":
     dors = [
         {"start":[10, 5], "end":[10, 6]}
     ]
+    """restrictionは家具の配置制限
+    alongwall : 壁際に配置する
+    """
     furniture_dic = [
         {"v_width_range":0.5, "h_width_range":1.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"bed", "color":"blue"},
         {"v_width_range":0.5, "h_width_range":1.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"sofa", "color":"brown"},
         {"v_width_range":0.6, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"desk", "color":"orange"},
         {"v_width_range":0.5, "h_width_range":0.5, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chair", "color":"red"},
         #{"v_width_range":0.05, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"TV", "color":"blue"},
-        {"v_width_range":0.4, "h_width_range":1.8, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"TV stand", "color":"navy"},
-        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"light", "color":"gold"},
-        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"plant", "color":"green"},
+        {"v_width_range":0.4, "h_width_range":1.8, "rotation_range":[0, 90, 180, 270, 360], "name":"TV stand", "color":"navy", "restriction":"alongwall"},
+        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"light", "color":"gold", "restriction":"alongwall"},
+        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"plant", "color":"green", "restriction":"alongwall"},
         {"v_width_range":0.3, "h_width_range":0.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"shelf", "color":"magenta"},
         {"v_width_range":0.5, "h_width_range":1, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chest", "color":"purple"},
     ]
-    room_info = main(room_edges=edges, random_furniture=furniture_dic, num=100, windows=None, doors=None)
+    room_info = main(room_edges=edges, random_furniture=furniture_dic, num=20, windows=None, doors=None)
     print(room_info)
     print(room_info.shape)
     room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)
