@@ -448,7 +448,7 @@ def rereformat_dataframe(df):
             for column in column_list:
                 dic[f"""{name}_{column}"""] = df_split_one_line[column]
             new_df_split_one_line = pd.DataFrame(dic, index=[0])
-            new_df = pd.concat([new_df, new_df_split_one_line], ignore_index=True)
+        new_df = pd.concat([new_df, new_df_split_one_line], ignore_index=True)
     return new_df
             
                 
