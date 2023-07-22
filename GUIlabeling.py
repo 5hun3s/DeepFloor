@@ -41,7 +41,7 @@ while True:
             df = pd.read_excel(f"""{curdir}/dataset/room_info_reform.xlsx""", engine="openpyxl")
         else:  # If file does not exist, create a new DataFrame
             df = pd.DataFrame()
-        df.loc[df["room"]==old_image.split(".")[0], "target"] = "good"
+        df.loc[df["room_num"]==old_image.split(".")[0], "target"] = "good"
         print(df)
         df.to_excel(f"""{curdir}/dataset/room_info_reform.xlsx""", index=False, engine="openpyxl")
         # 移動元のファイルパス
@@ -64,7 +64,7 @@ while True:
             df = pd.read_excel(f"""{curdir}/dataset/room_info_reform.xlsx""", engine="openpyxl")
         else:  # If file does not exist, create a new DataFrame
             df = pd.DataFrame()
-        df.loc[df["room"]==old_image.split(".")[0], "target"] = "bad"
+        df.loc[df["room_num"]==old_image.split(".")[0], "target"] = "bad"
         print(df)
         df.to_excel(f"""{curdir}/dataset/room_info_reform.xlsx""", index=False, engine="openpyxl")
         # 移動元のファイルパス
