@@ -9,6 +9,7 @@ import random
 import pandas as pd
 import os
 import copy
+import re
 
 def create_rectangle(center, width, height, angle, color):
     """四角形を作成する関数
@@ -47,9 +48,18 @@ def trigonometric_addition_sin(sin_a:float, cos_a:float, b:int):
     """
     return sin_a * math.cos(math.radians(b)) + cos_a * math.sin(math.radians(b))
 
+def trigonometric_addition_sin_minus(sin_a:float, cos_a:float, b:int):
+    """sin(a - b) = sin(a)cos(b) - cos(a)sin(b)を計算します
+    """
+    return sin_a * math.cos(math.radians(b)) - cos_a * math.sin(math.radians(b))
+
 def trigonometric_addition_cos(sin_a:float, cos_a:float, b:int):
     """cos(a + b) = cos(a)cos(b) - sin(a)sin(b)を計算します"""
     return cos_a * math.cos(math.radians(b)) - sin_a * math.sin(math.radians(b))
+
+def trigonometric_addition_cos_minus(sin_a:float, cos_a:float, b:int):
+    """cos(a - b) = cos(a)cos(b) + sin(a)sin(b)を計算します"""
+    return cos_a * math.cos(math.radians(b)) + sin_a * math.sin(math.radians(b))
 
 def create_direction_line(center, angle, color, furniture_h_len, furniture_v_len):
     """家具の回転を表す棒を描画するための関数
@@ -107,6 +117,7 @@ def multi_check_overlap(obj1, objs2:list):
         else:
             continue
     return False
+class RedoLoop(Exception): pass
 
 class Furniture():
     """家具クラス
@@ -287,56 +298,102 @@ class Room():
         min_x, max_x = min(x_coords), max(x_coords)
         min_y, max_y = min(y_coords), max(y_coords)
         furniture_info = list()
-        for f_dic in random_furniture:
-            dic = dict()
-
-            prob = f_dic['prob']
-            name = f_dic['name']
-            if random.random() < prob:
-                while True:
-                    """家具の幅もランダム
-                    #dic["v_width"] = random.randint(f_dic["v_width_range"][0], f_dic["v_width_range"][1])
-                    #dic["h_width"] = random.randint(f_dic["h_width_range"][0], f_dic["h_width_range"][1])
-                    #dic["rotation"] = random.choice(f_dic["rotation_range"])
-                    #dic["name"] = f_dic["name"]
-                    #dic["color"] = f_dic["color"]
-                    """
-                    """置く場所と角度だけランダム
-                    dic["v_width"] = f_dic["v_width_range"]
-                    dic["h_width"] = f_dic["h_width_range"]
-                    dic["rotation"] = random.choice(f_dic["rotation_range"])
-                    dic["name"] = f_dic["name"]
-                    dic["color"] = f_dic["color"]
-                    """
-                    #dic["coord"] = [[random.randint(min_x, max_x), random.randint(min_y, max_y)]]
-                    dic["name"] = name
-                    dic['exist'] = 1
-                    delta = 0.01
-                    if ("restriction" in f_dic) and (f_dic["restriction"] == "alongwall"):
-                        rand = random.choice([0, 1])
-                        if rand == 0:
-                            dic["x"], dic["y"] = random.choice([min_x + delta, max_x - delta]), random.randint(min_y, max_y)
-                        elif rand == 1:
-                            dic["x"], dic["y"] = random.randint(min_x, max_x), random.choice([min_y + delta, max_y - delta])
+        max_attempts = 50
+        for _ in range(max_attempts):
+            restart = False  # ループを再開するかどうかをチェックするフラグ
+            for f_dic in random_furniture:
+                dic = dict()
+                prob = f_dic['prob']
+                name = f_dic['name']
+                if random.random() < prob:
+                    counter = 0
+                    while True:
+                        """家具の幅もランダム
+                        #dic["v_width"] = random.randint(f_dic["v_width_range"][0], f_dic["v_width_range"][1])
+                        #dic["h_width"] = random.randint(f_dic["h_width_range"][0], f_dic["h_width_range"][1])
+                        #dic["rotation"] = random.choice(f_dic["rotation_range"])
+                        #dic["name"] = f_dic["name"]
+                        #dic["color"] = f_dic["color"]
+                        """
+                        """置く場所と角度だけランダム
+                        dic["v_width"] = f_dic["v_width_range"]
+                        dic["h_width"] = f_dic["h_width_range"]
                         dic["rotation"] = random.choice(f_dic["rotation_range"])
-                    elif "restriction" not in f_dic:
-                        dic["x"], dic["y"] = random.randint(min_x, max_x), random.randint(min_y, max_y)
-                        dic["rotation"] = dic["rotation"] = random.choice(f_dic["rotation_range"])
-                    fur = Furniture(f_dic["v_width_range"], f_dic["h_width_range"], dic["rotation"], f_dic["name"], f_dic["color"])
-                    error_flag = self.plot_furniture(ax, [fur], [[dic["x"], dic["y"]]])#ポジションのエラーを追加
-                    #error_flag = self.plot_furniture(ax, [furniture], dic["coord"])
-                    if error_flag[0]!=0:
-                        self.clear_furniture(ax, furniture_index=-1)
-                    elif error_flag[0]==0:
-                        furniture_info.append(dic)
+                        dic["name"] = f_dic["name"]
+                        dic["color"] = f_dic["color"]
+                        """
+                        dic["name"] = name
+                        dic['exist'] = 1
+                        dic["v_width"] = f_dic["v_width_range"]#家具の長さ追加した
+                        dic["h_width"] = f_dic["h_width_range"]
+                        delta = 0.01
+                        if ("restriction" in f_dic) and ("alongwall" in f_dic["restriction"]):
+                            rand = random.choice([0, 1])
+                            if rand == 0:
+                                dic["x"], dic["y"] = random.choice([min_x + delta, max_x - delta]), random.randint(min_y, max_y)
+                            elif rand == 1:
+                                dic["x"], dic["y"] = random.randint(min_x, max_x), random.choice([min_y + delta, max_y - delta])
+                            dic["rotation"] = random.choice(f_dic["rotation_range"])
+                        elif ("restriction" in f_dic) and ("set" in f_dic["restriction"]):
+                            
+                            set_furnitures = filtered_furniture = [item for item in furniture_info if re.match(f_dic["set_furniture"] + "_" + r'\d+', item['name'])]
+                            if len(set_furnitures) == 0:#setする家具が配置されていない場合その家具も配置されない
+                                
+                                break
+                            set_furniture = random.choice(set_furnitures)
+                            set_f_x, set_f_y, set_f_rotation = set_furniture["x"] + delta*math.sin(math.radians(set_furniture["rotation"])), set_furniture["y"] - delta*math.cos(math.radians(set_furniture["rotation"])), set_furniture["rotation"]
+                            rand = random.choice([0, 1, 2, 3])
+                            
+                            if rand == 0:
+                                set_f_rand_len = random.uniform(0, set_furniture["h_width"] - f_dic["v_width_range"])
+                                dic["x"] = set_f_x + set_f_rand_len*math.cos(math.radians(set_f_rotation)) + f_dic["v_width_range"]*math.cos(math.radians(set_f_rotation)) + f_dic["h_width_range"]*math.sin(math.radians(set_f_rotation))
+                                dic["y"] = set_f_y + set_f_rand_len*math.sin(math.radians(set_f_rotation)) + f_dic["v_width_range"]*math.sin(math.radians(set_f_rotation)) - f_dic["h_width_range"]*math.cos(math.radians(set_f_rotation))
+                                dic["rotation"] = set_f_rotation + 90
+                            elif rand == 1:
+                                set_f_rand_len = random.uniform(0, set_furniture["v_width"] - f_dic["v_width_range"])
+                                dic["x"] = set_f_x + set_furniture["h_width"]*math.cos(math.radians(set_f_rotation)) - set_f_rand_len*math.sin(math.radians(set_f_rotation)) + f_dic["h_width_range"]*math.cos(math.radians(set_f_rotation)) - f_dic["v_width_range"]*math.sin(math.radians(set_f_rotation))
+                                dic["y"] = set_f_y + set_furniture["h_width"]*math.sin(math.radians(set_f_rotation)) + set_f_rand_len*math.cos(math.radians(set_f_rotation)) + f_dic["h_width_range"]*math.sin(math.radians(set_f_rotation)) + f_dic["v_width_range"]*math.cos(math.radians(set_f_rotation))
+                                dic["rotation"] = set_f_rotation + 180
+                            elif rand == 2:
+                                set_f_rand_len = random.uniform(0, set_furniture["h_width"] - f_dic["v_width_range"])
+                                dic["x"] = set_f_x + set_f_rand_len*math.cos(math.radians(set_f_rotation)) - f_dic["h_width_range"]*math.sin(math.radians(set_f_rotation)) - set_furniture["v_width"]*math.sin(math.radians(set_f_rotation))
+                                dic["y"] = set_f_y + set_f_rand_len*math.sin(math.radians(set_f_rotation)) + f_dic["h_width_range"]*math.cos(math.radians(set_f_rotation)) + set_furniture["v_width"]*math.cos(math.radians(set_f_rotation))
+                                dic["rotation"] = set_f_rotation - 90
+                            elif rand == 3:
+                                set_f_rand_len = random.uniform(0, set_furniture["v_width"] - f_dic["v_width_range"])
+                                dic["x"] = -1*set_f_rand_len*math.sin(math.radians(set_f_rotation)) - f_dic["h_width_range"]*math.cos(math.radians(set_f_rotation))
+                                dic["y"] = set_f_rand_len*math.cos(math.radians(set_f_rotation)) - f_dic["h_width_range"]*math.sin(math.radians(set_f_rotation))
+                                dic["rotation"] = set_f_rotation
+                        elif "restriction" not in f_dic:
+                            dic["x"], dic["y"] = random.randint(min_x, max_x), random.randint(min_y, max_y)
+                            dic["rotation"] = dic["rotation"] = random.choice(f_dic["rotation_range"])
+                        fur = Furniture(f_dic["v_width_range"], f_dic["h_width_range"], dic["rotation"], f_dic["name"], f_dic["color"])
+                        error_flag = self.plot_furniture(ax, [fur], [[dic["x"], dic["y"]]])#ポジションのエラーを追加
+                        #error_flag = self.plot_furniture(ax, [furniture], dic["coord"])
+                        if error_flag[0]!=0:
+                            self.clear_furniture(ax, furniture_index=-1)
+                            counter += 1
+                        elif error_flag[0]==0:
+                            furniture_info.append(dic)
+                            break
+                        if counter>50:#50回以上エラーが出たら論理的におけないと判断し、もう一度全ての家具を置きなおす
+                            self.clear_furniture(ax, all_clear=True)
+                            restart = True
+                            break
+                        print(counter)
+                    if restart:
                         break
-            else:
-                dic["name"] = name
-                dic['exist'] = 0
-                dic["x"], dic["y"] = 0, 0
-                dic["rotation"] = 0
-                furniture_info.append(dic)
-
+                    
+                else:
+                    dic["name"] = name
+                    dic['exist'] = 0
+                    dic["x"], dic["y"] = 0, 0
+                    dic["rotation"] = 0
+                    dic["v_width"] = 0
+                    dic["h_width"] = 0
+                    furniture_info.append(dic)
+            if not restart:  # もし再開フラグがFalseの場合、外部ループを終了
+                break
         return furniture_info
    
 def find_max_values(arr):
@@ -448,7 +505,7 @@ def rereformat_dataframe(df):
             for column in column_list:
                 dic[f"""{name}_{column}"""] = df_split_one_line[column]
             new_df_split_one_line = pd.DataFrame(dic, index=[0])
-            new_df = pd.concat([new_df, new_df_split_one_line], ignore_index=True)
+        new_df = pd.concat([new_df, new_df_split_one_line], ignore_index=True)
     return new_df
             
                 
@@ -615,29 +672,31 @@ if __name__ ==  "__main__":
         {"start":[10, 5], "end":[10, 6]}
     ]
     """
+
+
+
     """restrictionは家具の配置制限
     alongwall : 壁際に配置する
+    set : 一緒に配置する家具を指定する
     """
     furniture_dic = [
         {"v_width_range":0.5, "h_width_range":1.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"bed", "color":"blue"},
         {"v_width_range":0.5, "h_width_range":1.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"sofa", "color":"brown"},
         {"v_width_range":0.6, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"desk", "color":"orange"},
-        {"v_width_range":0.5, "h_width_range":0.5, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chair", "color":"red"},
+        {"v_width_range":0.5, "h_width_range":0.5, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chair", "color":"red", "restriction":["set", "alomgwall"], "set_furniture":"desk"},
         #{"v_width_range":0.05, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"TV", "color":"blue"},
-        {"v_width_range":0.4, "h_width_range":1.8, "rotation_range":[0, 90, 180, 270, 360], "name":"TV stand", "color":"navy", "restriction":"alongwall"},
-        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"light", "color":"gold", "restriction":"alongwall"},
-        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"plant", "color":"green", "restriction":"alongwall"},
+        {"v_width_range":0.4, "h_width_range":1.8, "rotation_range":[0, 90, 180, 270, 360], "name":"TV stand", "color":"navy", "restriction":["alongwall"]},
+        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"light", "color":"gold", "restriction":["alongwall"]},
+        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"plant", "color":"green", "restriction":["alongwall"]},
         {"v_width_range":0.3, "h_width_range":0.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"shelf", "color":"magenta"},
         {"v_width_range":0.5, "h_width_range":1, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chest", "color":"purple"},
     ]
     #room_info = main(room_edges=edges, random_furniture=furniture_dic, num=20, windows=None, doors=None)
     room_info = main_rand_room_size(min_room_size=[6, 6], max_room_size=[10, 10] ,random_furniture=furniture_dic, num=20, windows=None, doors=None)
-    print(room_info)
-    print(room_info.shape)
-    room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)
-    #total.to_pickle(f"""{os.getcwd()}/dataset/room_info.pkl""", index=False)
-    print('finished')
 
-    df = pd.read_csv(f"""{os.getcwd()}/dataset/room_info.csv""")  # CSVファイルを読み込みます
-    df_reform = rereformat_dataframe(df)  # 関数を呼び出してデータフレームを変換します
+    room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)  # CSVファイルを読み込みます
+    df_reform = rereformat_dataframe(room_info)  # 関数を呼び出してデータフレームを変換します
     df_reform.to_csv(f"""{os.getcwd()}/dataset/room_info_reform.csv""", index=False)  # 新しいデータフレームを表示します
+    print(df_reform)
+    print(df_reform.shape)
+    print('finished')

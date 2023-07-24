@@ -20,28 +20,28 @@ first_image = image
 
 # ウィンドウのレイアウト
 layout = [[sg.Image(filename=os.path.join(folder, image), key='-IMAGE-')],
-          [sg.Button('good!')],
-          [sg.Button("bad!")]]
+          [sg.Text('0~100点の間でこの部屋の点数を評価')],
+          [sg.Input(key='-INPUT-')],
+          [sg.Button("OK!")]]
 
 window = sg.Window('GUIlabeling', layout)
 
 while True:
     event, values = window.read()
-    count = 0
     if event == sg.WINDOW_CLOSED:
         break
-    elif event == 'good!':
+    elif event == 'OK!':
         old_image = image
         image = next(images_cycle)
         if image == first_image:
             break
         window['-IMAGE-'].update(filename=os.path.join(folder, image))
 
-        if os.path.isfile(f"""{curdir}/dataset/room_info_reform.xlsx"""):
-            df = pd.read_excel(f"""{curdir}/dataset/room_info_reform.xlsx""", engine="openpyxl")
+        if os.path.isfile(f"""{curdir}/dataset/room_info_reform.csv"""):
+            df = pd.read_csv(f"""{curdir}/dataset/room_info_reform.csv""")
         else:  # If file does not exist, create a new DataFrame
             df = pd.DataFrame()
-        df.loc[df["room"]==old_image.split(".")[0], "target"] = "good"
+        df.loc[df["room_num"]==old_image.split(".")[0], "target"] = int(values['-INPUT-'])
         print(df)
         df.to_excel(f"""{curdir}/dataset/room_info_reform.xlsx""", index=False, engine="openpyxl")
         # 移動元のファイルパス
@@ -53,26 +53,4 @@ while True:
         # ファイルを移動する
         os.rename(source_file, destination_file)
 
-    elif event == "bad!":
-        old_image = image
-        image = next(images_cycle)
-        if image == first_image:
-            break
-        window['-IMAGE-'].update(filename=os.path.join(folder, image))
-
-        if os.path.isfile(f"""{curdir}/dataset/room_info_reform.xlsx"""):
-            df = pd.read_excel(f"""{curdir}/dataset/room_info_reform.xlsx""", engine="openpyxl")
-        else:  # If file does not exist, create a new DataFrame
-            df = pd.DataFrame()
-        df.loc[df["room"]==old_image.split(".")[0], "target"] = "bad"
-        print(df)
-        df.to_excel(f"""{curdir}/dataset/room_info_reform.xlsx""", index=False, engine="openpyxl")
-        # 移動元のファイルパス
-        source_file = os.path.join(folder, old_image)
-        # 移動先のディレクトリパス
-        destination_dir = f"""{curdir}/dataset/inspected/"""
-        # 移動先のファイルパス
-        destination_file = os.path.join(destination_dir, os.path.basename(source_file))
-        # ファイルを移動する
-        os.rename(source_file, destination_file)
 window.close()
