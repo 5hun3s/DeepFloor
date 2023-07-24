@@ -692,7 +692,7 @@ if __name__ ==  "__main__":
         {"v_width_range":0.5, "h_width_range":1, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chest", "color":"purple"},
     ]
     #room_info = main(room_edges=edges, random_furniture=furniture_dic, num=20, windows=None, doors=None)
-    room_info = main_rand_room_size(min_room_size=[6, 6], max_room_size=[10, 10] ,random_furniture=furniture_dic, num=20, windows=None, doors=None)
+    room_info = main_rand_room_size(min_room_size=[6, 6], max_room_size=[10, 10] ,random_furniture=furniture_dic, num=200, windows=None, doors=None)
 
     room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)  # CSVファイルを読み込みます
     df_reform = rereformat_dataframe(room_info)  # 関数を呼び出してデータフレームを変換します
