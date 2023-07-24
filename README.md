@@ -33,6 +33,19 @@ pipenv run python GUIlabeling.py
 ```
 を順番に実行
 
+## GUIlabeling.py
+家具配置は■が一つ一つの家具で■に点いてる棒がその家具の向いている方向です。<br>
+以下にそれぞれの家具のデフォルトの方向を示します。<br>
+- bed → 棒が向いている方向に枕がある<br>
+- sofa → 棒が向いている方向が正面（座ったときに向く方向）<br>
+- desk → あんまり方向関係ない<br>
+- chair → 棒が向いている方向が正面（座った時に向く方向）<br>
+- TV stand →　テレビとテレビスタンド棒が向いている方向がテレビの画面がある方<br>
+- light → 棒が向いている方向がライトが向いている方向<br>
+- plant → あんまり方向関係ない<br>
+- shelf(棚) → 棒が向いている方向が正面（おいている物が見える側）<br>
+- chest(タンス) → 棒が向いている方向が引き戸がある方向<br>
+
 ## 使用方法
 1. `pipenv run pytohn dataset.py`でdataset.pyを実行<br>➤dataset/uninspected内に画像ファイルとdatasetに家具の配置情報が入ったcsvファイルが作成される
 
