@@ -693,11 +693,10 @@ if __name__ ==  "__main__":
     ]
     #room_info = main(room_edges=edges, random_furniture=furniture_dic, num=20, windows=None, doors=None)
     room_info = main_rand_room_size(min_room_size=[6, 6], max_room_size=[10, 10] ,random_furniture=furniture_dic, num=20, windows=None, doors=None)
-    print(room_info)
-    print(room_info.shape)
-    room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)
-    print('finished')
 
-    df = pd.read_csv(f"""{os.getcwd()}/dataset/room_info.csv""")  # CSVファイルを読み込みます
-    df_reform = rereformat_dataframe(df)  # 関数を呼び出してデータフレームを変換します
+    room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)  # CSVファイルを読み込みます
+    df_reform = rereformat_dataframe(room_info)  # 関数を呼び出してデータフレームを変換します
     df_reform.to_csv(f"""{os.getcwd()}/dataset/room_info_reform.csv""", index=False)  # 新しいデータフレームを表示します
+    print(df_reform)
+    print(df_reform.shape)
+    print('finished')
