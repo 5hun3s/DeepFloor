@@ -680,7 +680,7 @@ if __name__ ==  "__main__":
     set : 一緒に配置する家具を指定する
     """
     furniture_dic = [
-        {"v_width_range":0.5, "h_width_range":1.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"bed", "color":"blue"},
+        {"v_width_range":1.4, "h_width_range":0.5, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"bed", "color":"blue", "restriction":["alongwall"]},
         {"v_width_range":0.5, "h_width_range":1.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"sofa", "color":"brown"},
         {"v_width_range":0.6, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"desk", "color":"orange"},
         {"v_width_range":0.5, "h_width_range":0.5, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chair", "color":"red", "restriction":["set", "alomgwall"], "set_furniture":"desk"},
