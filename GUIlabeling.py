@@ -20,7 +20,7 @@ first_image = image
 
 # ウィンドウのレイアウト
 layout = [[sg.Image(filename=os.path.join(folder, image), key='-IMAGE-')],
-          [sg.Text('0~100点の間でこの部屋の点数を評価')],
+          [sg.Text('Please give a score between 0 and 100')],
           [sg.Input(key='-INPUT-')],
           [sg.Button("OK!")]]
 
@@ -43,7 +43,7 @@ while True:
             df = pd.DataFrame()
         df.loc[df["room_num"]==old_image.split(".")[0], "target"] = int(values['-INPUT-'])
         print(df)
-        df.to_excel(f"""{curdir}/dataset/room_info_reform.xlsx""", index=False, engine="openpyxl")
+        df.to_csv(f"""{curdir}/dataset/room_info_reform.csv""", index=False)
         # 移動元のファイルパス
         source_file = os.path.join(folder, old_image)
         # 移動先のディレクトリパス
@@ -52,5 +52,6 @@ while True:
         destination_file = os.path.join(destination_dir, os.path.basename(source_file))
         # ファイルを移動する
         os.rename(source_file, destination_file)
+        window["-INPUT-"].update("")#入力された文字を削除
 
 window.close()
