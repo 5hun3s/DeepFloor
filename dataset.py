@@ -241,7 +241,7 @@ class Room():
             plot_line(draw_direction, ax)#add this line
             
             self.direction_lines.append(draw_direction)
-            if (multi_check_overlap(calculate_furniture, self.line_objects)) or (coord[0]<min_x) or (coord[0]>max_x) or (coord[1]<min_y) or (coord[1]>max_y):
+            if (multi_check_overlap(calculate_furniture, self.line_objects)) or (coord[0]<=min_x) or (coord[0]>=max_x) or (coord[1]<=min_y) or (coord[1]>=max_y):
                 error_flag.append(1)
             elif multi_check_overlap(calculate_furniture, self.furniture_objects):
                 error_flag.append(2)
@@ -447,10 +447,10 @@ def make_random_furniture_prob_set(random_furniture, max_produce_n:int=3):
     dic_list : list
         ランダムに複製された家具の情報が詰め込まれた辞書オブジェクトが複数入ったリスト
     """
-    prob_dict ={'bed':[0.9, 0.1, 0],
-                'sofa':[0.9, 0.1, 0],
-                'desk':[0.9, 0.1, 0],
-                'chair':[1, 0.5, 0.2],
+    prob_dict ={'bed':[0.9, 0, 0],
+                'sofa':[0.9, 0, 0],
+                'desk':[0.9, 0, 0],
+                'chair':[1, 0.2, 0.2],
                 'TV stand':[0.8, 0, 0],
                 'light':[0.9, 0.1, 0.1],
                 'plant':[0.7, 0.1, 0.1],
@@ -679,24 +679,31 @@ if __name__ ==  "__main__":
     alongwall : 壁際に配置する
     set : 一緒に配置する家具を指定する
     """
-    furniture_dic = [
-        {"v_width_range":0.5, "h_width_range":1.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"bed", "color":"blue", "restriction":["alongwall"]},
-        {"v_width_range":1.4, "h_width_range":0.5, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"sofa", "color":"brown"},
-        {"v_width_range":0.6, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"desk", "color":"orange"},
-        {"v_width_range":0.5, "h_width_range":0.5, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chair", "color":"red", "restriction":["set", "alomgwall"], "set_furniture":"desk"},
-        #{"v_width_range":0.05, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"TV", "color":"blue"},
-        {"v_width_range":1.8, "h_width_range":0.4, "rotation_range":[0, 90, 180, 270, 360], "name":"TV stand", "color":"navy", "restriction":["alongwall"]},
-        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"light", "color":"gold", "restriction":["alongwall"]},
-        {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"plant", "color":"green", "restriction":["alongwall"]},
-        {"v_width_range":0.3, "h_width_range":0.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"shelf", "color":"magenta"},
-        {"v_width_range":1, "h_width_range":0.5, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"chest", "color":"purple"},
-    ]
-    #room_info = main(room_edges=edges, random_furniture=furniture_dic, num=20, windows=None, doors=None)
-    room_info = main_rand_room_size(min_room_size=[6, 6], max_room_size=[10, 10] ,random_furniture=furniture_dic, num=200, windows=None, doors=None)
+    for __ in range(14):
+        furniture_dic = [
+            {"v_width_range":0.5, "h_width_range":1.4, "rotation_range":[0, 90, 180, 270, 360], "name":"bed", "color":"blue", "restriction":["alongwall"]},
+            {"v_width_range":1.4, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270, 360], "name":"sofa", "color":"brown"},
+            {"v_width_range":0.6, "h_width_range":1.2, "rotation_range":[0, 90, 180, 270, 360], "name":"desk", "color":"orange", "restriction":["alongwall"]},
+            {"v_width_range":0.5, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270, 360], "name":"chair", "color":"red", "restriction":["set", "alomgwall"], "set_furniture":"desk"},
+            #{"v_width_range":0.05, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"TV", "color":"blue"},
+            {"v_width_range":1.8, "h_width_range":0.4, "rotation_range":[0, 90, 180, 270, 360], "name":"TV stand", "color":"navy", "restriction":["alongwall"]},
+            {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"light", "color":"gold", "restriction":["alongwall"]},
+            {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"plant", "color":"green", "restriction":["alongwall"]},
+            {"v_width_range":0.3, "h_width_range":0.4, "rotation_range":[0, 90, 180, 270, 360], "name":"shelf", "color":"magenta", "restriction":["alongwall"]},
+            {"v_width_range":1, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270, 360], "name":"chest", "color":"purple", "restriction":["alongwall"]},
+        ]
+        #room_info = main(room_edges=edges, random_furniture=furniture_dic, num=20, windows=None, doors=None)
+        room_info = main_rand_room_size(min_room_size=[3, 3], max_room_size=[6, 6] ,random_furniture=furniture_dic, num=10, windows=None, doors=None)
 
-    #room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)  # CSVファイルを読み込みます
-    df_reform = rereformat_dataframe(room_info)  # 関数を呼び出してデータフレームを変換します
-    df_reform.to_csv(f"""{os.getcwd()}/dataset/room_info_reform.csv""", index=False)  # 新しいデータフレームを表示します
-    print(df_reform)
-    print(df_reform.shape)
-    print('finished')
+        #room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)  # CSVファイルを読み込みます
+        df_reform = rereformat_dataframe(room_info)  # 関数を呼び出してデータフレームを変換します
+        curdir = os.getcwd()
+        if os.path.isfile(f"""{curdir}/dataset/room_info_reform.csv"""):
+            df = pd.read_csv(f"""{curdir}/dataset/room_info_reform.csv""")
+            df = pd.concat([df, df_reform])
+            df.to_csv(f"""{os.getcwd()}/dataset/room_info_reform.csv""", index=False)
+            print(df.shape)
+        else:  # If file does not exist, create a new DataFrame
+            df_reform.to_csv(f"""{os.getcwd()}/dataset/room_info_reform.csv""", index=False)  # 新しいデータフレームを表示します
+            print(df_reform.shape)
+        print('finished')
