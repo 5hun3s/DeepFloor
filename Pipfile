@@ -26,6 +26,7 @@ xlrd = "==2.0.1"
 importlib-resources = "*"
 zipp = "*"
 scikit-learn = "*"
+torch = "*"
 
 [dev-packages]
 
