@@ -10,6 +10,9 @@ import pandas as pd
 import os
 import copy
 import re
+import torch
+from torch import nn
+from torch.autograd import Variable
 
 def create_rectangle(center, width, height, angle, color):
     """四角形を作成する関数
@@ -653,6 +656,36 @@ def main_rand_room_size(min_room_size:list, max_room_size:list, random_furniture
     return room_info
 
 
+class Net(nn.Module):
+    def __init__(self, n_features):
+        super(Net, self).__init__()
+        self.fc = nn.Linear(n_features, 1)
+
+    def forward(self, x):
+        return self.fc(x)
+    
+    
+def get_high_score_indices(model_path, test_df, threshold):
+    # データフレームをテストデータに変換
+    X_test = torch.tensor(test_df.values, dtype=torch.float32)
+
+    # 保存したモデルを読み込む
+    model = Net(X_test.shape[1])  # モデルのインスタンスを作成
+    model.load_state_dict(torch.load(model_path))  # 保存したモデルのパラメータを読み込む
+    model.eval()  # モデルを評価モードに設定
+
+    # X_testデータを使って予測を行う
+    with torch.no_grad():
+        predictions = model(X_test)
+
+    # 予測結果をPyTorchのテンソルからnumpy配列に変換
+    predictions_list = predictions.numpy().flatten().tolist()
+
+    # リスト内の要素が閾値を超える場合、そのインデックスを取得
+    indices = [i for i, x in enumerate(predictions_list) if x < threshold]
+
+    return indices
+
 if __name__ ==  "__main__":
     """
     room_h_length = 4
@@ -680,30 +713,36 @@ if __name__ ==  "__main__":
     set : 一緒に配置する家具を指定する
     """
     for __ in range(14):
-        furniture_dic = [
-            {"v_width_range":0.5, "h_width_range":1.4, "rotation_range":[0, 90, 180, 270, 360], "name":"bed", "color":"blue", "restriction":["alongwall"]},
-            {"v_width_range":1.4, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270, 360], "name":"sofa", "color":"brown"},
-            {"v_width_range":0.6, "h_width_range":1.2, "rotation_range":[0, 90, 180, 270, 360], "name":"desk", "color":"orange", "restriction":["alongwall"]},
-            {"v_width_range":0.5, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270, 360], "name":"chair", "color":"red", "restriction":["set", "alomgwall"], "set_furniture":"desk"},
-            #{"v_width_range":0.05, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"TV", "color":"blue"},
-            {"v_width_range":1.8, "h_width_range":0.4, "rotation_range":[0, 90, 180, 270, 360], "name":"TV stand", "color":"navy", "restriction":["alongwall"]},
-            {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"light", "color":"gold", "restriction":["alongwall"]},
-            {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"plant", "color":"green", "restriction":["alongwall"]},
-            {"v_width_range":0.3, "h_width_range":0.4, "rotation_range":[0, 90, 180, 270, 360], "name":"shelf", "color":"magenta", "restriction":["alongwall"]},
-            {"v_width_range":1, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270, 360], "name":"chest", "color":"purple", "restriction":["alongwall"]},
-        ]
-        #room_info = main(room_edges=edges, random_furniture=furniture_dic, num=20, windows=None, doors=None)
-        room_info = main_rand_room_size(min_room_size=[3, 3], max_room_size=[6, 6] ,random_furniture=furniture_dic, num=10, windows=None, doors=None)
+        while True:
+            furniture_dic = [
+                {"v_width_range":0.5, "h_width_range":1.4, "rotation_range":[0, 90, 180, 270, 360], "name":"bed", "color":"blue", "restriction":["alongwall"]},
+                {"v_width_range":1.4, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270, 360], "name":"sofa", "color":"brown"},
+                {"v_width_range":0.6, "h_width_range":1.2, "rotation_range":[0, 90, 180, 270, 360], "name":"desk", "color":"orange", "restriction":["alongwall"]},
+                {"v_width_range":0.5, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270, 360], "name":"chair", "color":"red", "restriction":["set", "alomgwall"], "set_furniture":"desk"},
+                #{"v_width_range":0.05, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"TV", "color":"blue"},
+                {"v_width_range":1.8, "h_width_range":0.4, "rotation_range":[0, 90, 180, 270, 360], "name":"TV stand", "color":"navy", "restriction":["alongwall"]},
+                {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"light", "color":"gold", "restriction":["alongwall"]},
+                {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"plant", "color":"green", "restriction":["alongwall"]},
+                {"v_width_range":0.3, "h_width_range":0.4, "rotation_range":[0, 90, 180, 270, 360], "name":"shelf", "color":"magenta", "restriction":["alongwall"]},
+                {"v_width_range":1, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270, 360], "name":"chest", "color":"purple", "restriction":["alongwall"]},
+            ]
+            #room_info = main(room_edges=edges, random_furniture=furniture_dic, num=20, windows=None, doors=None)
+            room_info = main_rand_room_size(min_room_size=[3, 3], max_room_size=[6, 6] ,random_furniture=furniture_dic, num=10, windows=None, doors=None)
 
-        #room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)  # CSVファイルを読み込みます
-        df_reform = rereformat_dataframe(room_info)  # 関数を呼び出してデータフレームを変換します
-        curdir = os.getcwd()
-        if os.path.isfile(f"""{curdir}/dataset/room_info_reform.csv"""):
-            df = pd.read_csv(f"""{curdir}/dataset/room_info_reform.csv""")
-            df = pd.concat([df, df_reform])
-            df.to_csv(f"""{os.getcwd()}/dataset/room_info_reform.csv""", index=False)
-            print(df.shape)
-        else:  # If file does not exist, create a new DataFrame
-            df_reform.to_csv(f"""{os.getcwd()}/dataset/room_info_reform.csv""", index=False)  # 新しいデータフレームを表示します
-            print(df_reform.shape)
-        print('finished')
+            #room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)  # CSVファイルを読み込みます
+            df_reform = rereformat_dataframe(room_info)  # 関数を呼び出してデータフレームを変換します
+            curdir = os.getcwd()
+            test_df = df_reform.drop(['room_num', 'target'], axis=1)
+            low_index = get_high_score_indices('./learned_model/torch_model.pth', test_df, 10)
+            df_reform = df_reform.drop(low_index)
+            if df_reform.shape[0] > 10:
+                break
+            if os.path.isfile(f"""{curdir}/dataset/room_info_reform.csv"""):
+                df = pd.read_csv(f"""{curdir}/dataset/room_info_reform.csv""")
+                df = pd.concat([df, df_reform])
+                df.to_csv(f"""{os.getcwd()}/dataset/room_info_reform.csv""", index=False)
+                print(df.shape)
+            else:  # If file does not exist, create a new DataFrame
+                df_reform.to_csv(f"""{os.getcwd()}/dataset/room_info_reform.csv""", index=False)  # 新しいデータフレームを表示します
+                print(df_reform.shape)
+            print('finished')
