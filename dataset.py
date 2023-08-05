@@ -679,18 +679,18 @@ if __name__ ==  "__main__":
     alongwall : 壁際に配置する
     set : 一緒に配置する家具を指定する
     """
-    for __ in range(14):
+    for __ in range(17):
         furniture_dic = [
-            {"v_width_range":0.5, "h_width_range":1.4, "rotation_range":[0, 90, 180, 270, 360], "name":"bed", "color":"blue", "restriction":["alongwall"]},
-            {"v_width_range":1.4, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270, 360], "name":"sofa", "color":"brown"},
-            {"v_width_range":0.6, "h_width_range":1.2, "rotation_range":[0, 90, 180, 270, 360], "name":"desk", "color":"orange", "restriction":["alongwall"]},
-            {"v_width_range":0.5, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270, 360], "name":"chair", "color":"red", "restriction":["set", "alomgwall"], "set_furniture":"desk"},
+            {"v_width_range":1, "h_width_range":1.95, "rotation_range":[0, 90, 180, 270], "name":"bed", "color":"blue", "restriction":["alongwall"]},
+            {"v_width_range":1.4, "h_width_range":0.5, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315], "name":"sofa", "color":"brown"},
+            {"v_width_range":0.6, "h_width_range":1.2, "rotation_range":[0, 90, 180, 270], "name":"desk", "color":"orange", "restriction":["alongwall"]},
+            {"v_width_range":0.5, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270], "name":"chair", "color":"red", "restriction":["set", "alomgwall"], "set_furniture":"desk"},
             #{"v_width_range":0.05, "h_width_range":1.2, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315, 360], "name":"TV", "color":"blue"},
-            {"v_width_range":1.8, "h_width_range":0.4, "rotation_range":[0, 90, 180, 270, 360], "name":"TV stand", "color":"navy", "restriction":["alongwall"]},
-            {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"light", "color":"gold", "restriction":["alongwall"]},
-            {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270, 360], "name":"plant", "color":"green", "restriction":["alongwall"]},
-            {"v_width_range":0.3, "h_width_range":0.4, "rotation_range":[0, 90, 180, 270, 360], "name":"shelf", "color":"magenta", "restriction":["alongwall"]},
-            {"v_width_range":1, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270, 360], "name":"chest", "color":"purple", "restriction":["alongwall"]},
+            {"v_width_range":1.8, "h_width_range":0.4, "rotation_range":[0, 45, 90, 135, 180, 225, 270, 315], "name":"TV stand", "color":"navy", "restriction":["alongwall"]},
+            {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270], "name":"light", "color":"gold", "restriction":["alongwall"]},
+            {"v_width_range":0.2, "h_width_range":0.2, "rotation_range":[0, 90, 180, 270], "name":"plant", "color":"green", "restriction":["alongwall"]},
+            {"v_width_range":0.3, "h_width_range":0.4, "rotation_range":[0, 90, 180, 270], "name":"shelf", "color":"magenta", "restriction":["alongwall"]},
+            {"v_width_range":1, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270], "name":"chest", "color":"purple", "restriction":["alongwall"]},
         ]
         #room_info = main(room_edges=edges, random_furniture=furniture_dic, num=20, windows=None, doors=None)
         room_info = main_rand_room_size(min_room_size=[3, 3], max_room_size=[6, 6] ,random_furniture=furniture_dic, num=10, windows=None, doors=None)
