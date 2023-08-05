@@ -735,7 +735,7 @@ if __name__ ==  "__main__":
             df_reform_all = rereformat_dataframe(room_info)  # 関数を呼び出してデータフレームを変換します
             #AIを使って採点
             model_path = './learned_model/torch_model.pth'
-            threshold = 45
+            threshold = 35
             df_test = df_reform_all.drop(['room_num', 'target'], axis=1)
             index = get_high_score_indices(model_path, df_test, threshold)
             print(f'high score index:{index}')
