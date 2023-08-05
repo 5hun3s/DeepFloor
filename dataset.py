@@ -10,6 +10,9 @@ import pandas as pd
 import os
 import copy
 import re
+import torch
+from torch import nn
+from torch.autograd import Variable
 
 def create_rectangle(center, width, height, angle, color):
     """四角形を作成する関数
@@ -380,7 +383,7 @@ class Room():
                             self.clear_furniture(ax, all_clear=True)
                             restart = True
                             break
-                        print(counter)
+                        #print(counter)
                     if restart:
                         break
                     
@@ -649,11 +652,42 @@ def main_rand_room_size(min_room_size:list, max_room_size:list, random_furniture
             
             room_info = pd.concat([room_info, df])
         fig.savefig(f"""{os.getcwd()}/dataset/uninspected/room_{str(_ + image_num + 1)}.png""")
+        plt.close(fig)
     room_info["target"] = "uninspected"
     return room_info
 
 
+class Net(nn.Module):
+    def __init__(self, n_features):
+        super(Net, self).__init__()
+        self.fc = nn.Linear(n_features, 1)
+
+    def forward(self, x):
+        return self.fc(x)
+
+def get_high_score_indices(model_path, test_df, threshold):
+    # データフレームをテストデータに変換
+    X_test = torch.tensor(test_df.values, dtype=torch.float32)
+
+    # 保存したモデルを読み込む
+    model = Net(X_test.shape[1])  # モデルのインスタンスを作成
+    model.load_state_dict(torch.load(model_path))  # 保存したモデルのパラメータを読み込む
+    model.eval()  # モデルを評価モードに設定
+
+    # X_testデータを使って予測を行う
+    with torch.no_grad():
+        predictions = model(X_test)
+
+    # 予測結果をPyTorchのテンソルからnumpy配列に変換
+    predictions_list = predictions.numpy().flatten().tolist()
+
+    # リスト内の要素が閾値を超える場合、そのインデックスを取得
+    indices = [i for i, x in enumerate(predictions_list) if x > threshold]
+
+    return indices
+
 if __name__ ==  "__main__":
+    print('start')
     """
     room_h_length = 4
     room_v_length = 6
@@ -692,11 +726,24 @@ if __name__ ==  "__main__":
             {"v_width_range":0.3, "h_width_range":0.4, "rotation_range":[0, 90, 180, 270, 360], "name":"shelf", "color":"magenta", "restriction":["alongwall"]},
             {"v_width_range":1, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270, 360], "name":"chest", "color":"purple", "restriction":["alongwall"]},
         ]
-        #room_info = main(room_edges=edges, random_furniture=furniture_dic, num=20, windows=None, doors=None)
-        room_info = main_rand_room_size(min_room_size=[3, 3], max_room_size=[6, 6] ,random_furniture=furniture_dic, num=10, windows=None, doors=None)
+        df_reform = pd.DataFrame()
+        while True:
+            #room_info = main(room_edges=edges, random_furniture=furniture_dic, num=20, windows=None, doors=None)
+            room_info = main_rand_room_size(min_room_size=[3, 3], max_room_size=[6, 6] ,random_furniture=furniture_dic, num=10, windows=None, doors=None)
 
-        #room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)  # CSVファイルを読み込みます
-        df_reform = rereformat_dataframe(room_info)  # 関数を呼び出してデータフレームを変換します
+            #room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)  # CSVファイルを読み込みます
+            df_reform_all = rereformat_dataframe(room_info)  # 関数を呼び出してデータフレームを変換します
+            #AIを使って採点
+            model_path = './learned_model/torch_model.pth'
+            threshold = 10
+            df_test = df_reform_all.drop(['room_num', 'target'], axis=1)
+            index = get_high_score_indices(model_path, df_test, threshold)
+            print(f'high score index:{index}')
+            df_high_score = df_reform_all.iloc[index]
+            df_reform = pd.concat([df_reform, df_high_score])
+            if df_reform.shape[0] >= 10:
+                break
+        print('scoring finished')
         curdir = os.getcwd()
         if os.path.isfile(f"""{curdir}/dataset/room_info_reform.csv"""):
             df = pd.read_csv(f"""{curdir}/dataset/room_info_reform.csv""")
@@ -706,4 +753,4 @@ if __name__ ==  "__main__":
         else:  # If file does not exist, create a new DataFrame
             df_reform.to_csv(f"""{os.getcwd()}/dataset/room_info_reform.csv""", index=False)  # 新しいデータフレームを表示します
             print(df_reform.shape)
-        print('finished')
+    print('finished')
