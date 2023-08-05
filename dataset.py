@@ -10,6 +10,9 @@ import pandas as pd
 import os
 import copy
 import re
+import torch
+from torch import nn
+from torch.autograd import Variable
 
 def create_rectangle(center, width, height, angle, color):
     """四角形を作成する関数
@@ -651,6 +654,40 @@ def main_rand_room_size(min_room_size:list, max_room_size:list, random_furniture
         fig.savefig(f"""{os.getcwd()}/dataset/uninspected/room_{str(_ + image_num + 1)}.png""")
     room_info["target"] = "uninspected"
     return room_info
+
+
+class Net(nn.Module):
+    def __init__(self, n_features):
+        super(Net, self).__init__()
+        self.fc = nn.Linear(n_features, 1)
+
+    def forward(self, x):
+        return self.fc(x)
+
+def get_high_score_indices(model_path, test_df, threshold):
+    # データフレームをテストデータに変換
+    X_test = torch.tensor(test_df.values, dtype=torch.float32)
+
+    # 保存したモデルを読み込む
+    model = Net(X_test.shape[1])  # モデルのインスタンスを作成
+    model.load_state_dict(torch.load(model_path))  # 保存したモデルのパラメータを読み込む
+    model.eval()  # モデルを評価モードに設定
+
+    # X_testデータを使って予測を行う
+    with torch.no_grad():
+        predictions = model(X_test)
+
+    # 予測結果をPyTorchのテンソルからnumpy配列に変換
+    predictions_list = predictions.numpy().flatten().tolist()
+
+    # リスト内の要素が閾値を超える場合、そのインデックスを取得
+    indices = [i for i, x in enumerate(predictions_list) if x > threshold]
+
+    return indices
+
+# 使用例
+indices = get_high_score_indices('./learned_model/torch_model.pth', X_test, 15)
+print(indices)
 
 
 if __name__ ==  "__main__":
