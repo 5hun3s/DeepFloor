@@ -297,7 +297,6 @@ class Room():
         furniture_info : list
             各家具の情報が記録してある辞書オブジェクトが入ってるリスト
         """
-        print(random_furniture)
         x_coords = [edge[0] for edge in self.edges]
         y_coords = [edge[1] for edge in self.edges]
         min_x, max_x = min(x_coords), max(x_coords)
@@ -371,7 +370,6 @@ class Room():
                     furniture_info.append(dic)
             if not restart:  # もし再開フラグがFalseの場合、外部ループを終了
                 break
-        print("final")
         return furniture_info
    
 def find_max_values(arr):
