@@ -685,11 +685,6 @@ def get_high_score_indices(model_path, test_df, threshold):
 
     return indices
 
-# 使用例
-indices = get_high_score_indices('./learned_model/torch_model.pth', X_test, 15)
-print(indices)
-
-
 if __name__ ==  "__main__":
     """
     room_h_length = 4
@@ -729,11 +724,22 @@ if __name__ ==  "__main__":
             {"v_width_range":0.3, "h_width_range":0.4, "rotation_range":[0, 90, 180, 270, 360], "name":"shelf", "color":"magenta", "restriction":["alongwall"]},
             {"v_width_range":1, "h_width_range":0.5, "rotation_range":[0, 90, 180, 270, 360], "name":"chest", "color":"purple", "restriction":["alongwall"]},
         ]
-        #room_info = main(room_edges=edges, random_furniture=furniture_dic, num=20, windows=None, doors=None)
-        room_info = main_rand_room_size(min_room_size=[3, 3], max_room_size=[6, 6] ,random_furniture=furniture_dic, num=10, windows=None, doors=None)
+        while True:
+            #room_info = main(room_edges=edges, random_furniture=furniture_dic, num=20, windows=None, doors=None)
+            room_info = main_rand_room_size(min_room_size=[3, 3], max_room_size=[6, 6] ,random_furniture=furniture_dic, num=10, windows=None, doors=None)
 
-        #room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)  # CSVファイルを読み込みます
-        df_reform = rereformat_dataframe(room_info)  # 関数を呼び出してデータフレームを変換します
+            #room_info.to_csv(f"""{os.getcwd()}/dataset/room_info.csv""", index=False)  # CSVファイルを読み込みます
+            df_reform_all = rereformat_dataframe(room_info)  # 関数を呼び出してデータフレームを変換します
+            #AIを使って採点
+            df_dummy = pd.DataFrame()
+            model_path = './learned_model/torch_model.pth'
+            threshold = 10
+            df_test = df_reform_all.drop(['room_num', 'target'], axis=1)
+            index = get_high_score_indices(model_path, df_test, threshold)
+            df_high_score = df_reform.iloc[index]
+            df_reform = pd.concat([df_dummy, df_high_score])
+            if df_reform.shape[0] >= 10:
+                break
         curdir = os.getcwd()
         if os.path.isfile(f"""{curdir}/dataset/room_info_reform.csv"""):
             df = pd.read_csv(f"""{curdir}/dataset/room_info_reform.csv""")
