@@ -738,7 +738,7 @@ if __name__ ==  "__main__":
             threshold = 10
             df_test = df_reform_all.drop(['room_num', 'target'], axis=1)
             index = get_high_score_indices(model_path, df_test, threshold)
-            print(index)
+            print(f'high score index:{index}')
             df_high_score = df_reform_all.iloc[index]
             df_reform = pd.concat([df_reform, df_high_score])
             if df_reform.shape[0] >= 10:
@@ -753,4 +753,4 @@ if __name__ ==  "__main__":
         else:  # If file does not exist, create a new DataFrame
             df_reform.to_csv(f"""{os.getcwd()}/dataset/room_info_reform.csv""", index=False)  # 新しいデータフレームを表示します
             print(df_reform.shape)
-        print('finished')
+    print('finished')
