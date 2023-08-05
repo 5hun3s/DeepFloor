@@ -383,7 +383,7 @@ class Room():
                             self.clear_furniture(ax, all_clear=True)
                             restart = True
                             break
-                        print(counter)
+                        #print(counter)
                     if restart:
                         break
                     
@@ -652,6 +652,7 @@ def main_rand_room_size(min_room_size:list, max_room_size:list, random_furniture
             
             room_info = pd.concat([room_info, df])
         fig.savefig(f"""{os.getcwd()}/dataset/uninspected/room_{str(_ + image_num + 1)}.png""")
+        plt.close(fig)
     room_info["target"] = "uninspected"
     return room_info
 
@@ -686,6 +687,7 @@ def get_high_score_indices(model_path, test_df, threshold):
     return indices
 
 if __name__ ==  "__main__":
+    print('start')
     """
     room_h_length = 4
     room_v_length = 6
@@ -736,6 +738,7 @@ if __name__ ==  "__main__":
             threshold = 10
             df_test = df_reform_all.drop(['room_num', 'target'], axis=1)
             index = get_high_score_indices(model_path, df_test, threshold)
+            print(index)
             df_high_score = df_reform_all.iloc[index]
             df_reform = pd.concat([df_reform, df_high_score])
             if df_reform.shape[0] >= 10:
