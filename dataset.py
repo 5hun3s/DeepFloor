@@ -302,15 +302,14 @@ class Room():
         max_attempts = 50
         for _ in range(max_attempts):
             restart = False  # ループを再開するかどうかをチェックするフラグ
-            print("first")
             furniture_info = list()
             for f_dic in random_furniture:
-                print("second")
+                #print("second")
                 dic = dict()
                 prob = f_dic['prob']
                 name = f_dic['name']
                 if random.random() < prob:
-                    print("third")
+                    #print("third")
                     counter = 0
                     while True:
                         dic["name"] = name
@@ -348,14 +347,14 @@ class Room():
                             counter += 1
                         elif error_flag[0]==0:
                             furniture_info.append(dic)
-                            print("break")
+                            #print("break")
                             break
                         if counter>50:#50回以上エラーが出たら論理的におけないと判断し、もう一度全ての家具を置きなおす
                             self.clear_furniture(ax, all_clear=True)
-                            print("clear")
+                            #print("clear")
                             restart = True
                             break
-                        print(counter)
+                        #print(counter)
                     if restart:
                         break
                     
@@ -656,7 +655,7 @@ if __name__ ==  "__main__":
     set : 一緒に配置する家具を指定する
     facing : 家具が向かい合うように配置する
     """
-    for __ in range(2):
+    for __ in range(20):
         furniture_dic = [
             {"v_width_range":1, "h_width_range":1.95, "rand_rotation":[0,90,180,270], "name":"bed", "color":"blue", "restriction":["alongwall"]},
             {"v_width_range":0.6, "h_width_range":1.2, "rand_rotation":[0,90,180,270], "name":"desk", "color":"orange", "restriction":["alongwall"]},
