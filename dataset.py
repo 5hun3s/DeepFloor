@@ -626,7 +626,7 @@ def main_rand_room_size(min_room_size:list, max_room_size:list, random_furniture
             df["room_v_length"] = room_v_len
             
             room_info = pd.concat([room_info, df])
-        fig.savefig(f"""{os.getcwd()}/dataset/uninspected/room_{str(_ + image_num + 1)}.png""")
+        fig.savefig(f"""{os.getcwd()}/dataset/uninspected/room_{str(_ + image_num)}.png""")
         plt.close(fig)
     room_info["target"] = "uninspected"
     return room_info
