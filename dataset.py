@@ -740,6 +740,7 @@ if __name__ ==  "__main__":
             df_reform = pd.concat([df_dummy, df_high_score])
             if df_reform.shape[0] >= 10:
                 break
+        print('finished scoring')
         curdir = os.getcwd()
         if os.path.isfile(f"""{curdir}/dataset/room_info_reform.csv"""):
             df = pd.read_csv(f"""{curdir}/dataset/room_info_reform.csv""")
