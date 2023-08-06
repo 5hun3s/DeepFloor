@@ -7,12 +7,16 @@ from openpyxl import Workbook
 curdir = os.getcwd()
 # 画像を含むディレクトリのパス
 folder = f"""{curdir}/dataset/uninspected"""
-
+df = pd.read_csv(f'{curdir}/dataset/room_info_reform.csv')
+highscore_name = [name + '.png' for name in df['room_num'].to_list()]
 # 画像の拡張子
-image_extension = ".png"
+#image_extension = ".png"
 
 # フォルダ内の画像のリストを取得
-image_list = [img for img in os.listdir(folder) if img.endswith(image_extension)]
+#image_list = [img for img in os.listdir(folder) if img.endswith(image_extension)]
+all_images = os.listdir(folder)
+image_list = [img for img in all_images if img in highscore_name]
+print(image_list)
 image_list.sort()  # アルファベット順にソート、必要に応じてカスタマイズ
 images_cycle = cycle(image_list)  # リストをループできるようにする
 image = next(images_cycle)  # 最初の画像
