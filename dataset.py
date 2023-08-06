@@ -713,8 +713,9 @@ if __name__ ==  "__main__":
             df_test = df_reform_all.drop(['room_num', 'target'], axis=1)
             index = get_high_score_indices(model_path, df_test, threshold)
             print(f'high score index:{index}')
-            df_high_score = df_reform_all.iloc[index]
+            df_high_score = df_reform_all.iloc[index].reset_index(drop=True)
             df_reform = pd.concat([df_reform, df_high_score])
+            df_reform = df_reform.reset_index(drop=True)
             if df_reform.shape[0] >= 10:
                 break
         print('scoring finished')
