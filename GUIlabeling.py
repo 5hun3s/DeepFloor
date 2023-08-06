@@ -45,7 +45,7 @@ while True:
         else:  # If file does not exist, create a new DataFrame
             df = pd.DataFrame()
         df.loc[df["room_num"]==old_image.split(".")[0], "target"] = int(values['-INPUT-'])
-        print(df)
+        #print(df)
         df.to_csv(f"""{curdir}/dataset/room_info_reform.csv""", index=False)
         # 移動元のファイルパス
         source_file = os.path.join(folder, old_image)
