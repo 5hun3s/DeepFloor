@@ -16,7 +16,6 @@ highscore_name = [name + '.png' for name in df['room_num'].to_list()]
 #image_list = [img for img in os.listdir(folder) if img.endswith(image_extension)]
 all_images = os.listdir(folder)
 image_list = [img for img in all_images if img in highscore_name]
-print(image_list)
 image_list.sort()  # アルファベット順にソート、必要に応じてカスタマイズ
 images_cycle = cycle(image_list)  # リストをループできるようにする
 image = next(images_cycle)  # 最初の画像
